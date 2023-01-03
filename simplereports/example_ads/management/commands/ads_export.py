@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from webb.ads_export import export, get_campaigns, agregate_datestat, test
+from example_ads.ads_export import export, get_campaigns, agregate_datestat, test
 
 class Command(BaseCommand):
     help = "Запрос"
