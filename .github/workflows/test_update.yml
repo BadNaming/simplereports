@@ -61,7 +61,8 @@ jobs:
         with:
           to: ${{ secrets.TELEGRAM_TO_TEST }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
-          message: ${{ github.event_name }} success to ${{ github.ref }} by ${{ github.workflow }}
+          message: ${{ github.event }}
+
 
           
 
