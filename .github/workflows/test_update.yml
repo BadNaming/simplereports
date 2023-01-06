@@ -1,4 +1,4 @@
-name: test_simplereports.ru
+name: Test update from develop
 
 on:
   pull_request:
@@ -61,7 +61,7 @@ jobs:
         with:
           to: ${{ secrets.TELEGRAM_TO_TEST }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
-          message: Pull request ref - ${{ github.ref }} ref_name - ${{ github.ref_name }} вмержен и вылит на test
+          message: ${{ github.event_name }} success to ${{ github.ref }} by ${{ github.workflow }}
 
           
 
