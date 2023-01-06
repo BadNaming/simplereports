@@ -59,9 +59,9 @@ jobs:
       - name: send message
         uses: appleboy/telegram-action@master
         with:
-          to: ${{ secrets.TELEGRAM_TO_TEST }}
+          to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
-          message: ${{ github.event_name }} ветки ${{ github.head_ref }} успешно выполнен в ${{ github.base_ref }}, test обновлен и перезапущен
+          message: ${{ github.event_name }} ветки ${{ github.head_ref }} успешно смержен в ${{ github.base_ref }}, test обновлен и перезапущен
 
 
           
