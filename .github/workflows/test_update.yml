@@ -59,9 +59,9 @@ jobs:
       - name: send message
         uses: appleboy/telegram-action@master
         with:
-          to: ${{ secrets.TELEGRAM_TO }}
+          to: ${{ secrets.TELEGRAM_TO_TEST }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
-          message: Pull request ${{ github.ref }} вмержен и вылит на test
+          message: Pull request ref - ${{ github.ref }} ref_name - ${{ github.ref_name }} вмержен и вылит на test
 
           
 
