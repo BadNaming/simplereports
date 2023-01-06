@@ -39,6 +39,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
           script: |
+            cd ~/simplereports/infra/
             sudo docker-compose stop
             sudo docker-compose rm backend
             rm .env
