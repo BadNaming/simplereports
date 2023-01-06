@@ -61,7 +61,7 @@ jobs:
         with:
           to: ${{ secrets.TELEGRAM_TO_TEST }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
-          message: ${{ github.event }}
+          message: ${{ github.event_name }} ветки ${{ github.head_ref }} успешно выполнен в ${{ github.base_ref }}, test обновлен и перезапущен
 
 
           
