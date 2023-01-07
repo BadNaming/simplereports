@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'example_ads.apps.ExampleAdsConfig',
     'example_api.apps.ExampleApiConfig',
+    'users.apps.UsersConfig',
+    'core.apps.CoreConfig',
     'rest_framework',
 ]
 
@@ -72,6 +74,9 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'simplereports.wsgi.application'
+
+LOGIN_URL = 'users:login'
+LOGIN_REDIRECT_URL = 'example_ads:index2'
 
 
 # Database
@@ -136,3 +141,9 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTH_USER_MODEL = 'users.User'
+
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+DEFAULT_FROM_EMAIL = 'administator@simplereports.ru'
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
