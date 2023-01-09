@@ -5,5 +5,6 @@ from . import views
 app_name = 'example_ads'
 
 urlpatterns = [
-    path('', views.index, name='index'),
+    path('report/', views.index3, name='index3'),
+    path('', views.index2, name='index2'),
 ]
