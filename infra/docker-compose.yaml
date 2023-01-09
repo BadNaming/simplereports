@@ -18,6 +18,12 @@ services:
     env_file:
       - ./.env
 
+  req_app:
+    image: jinglemybells/sr_req:latest
+    restart: always
+    depends_on:
+      - backend
+
   nginx:
     image: nginx:1.21.3-alpine
     ports:
