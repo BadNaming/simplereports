@@ -1,9 +1,13 @@
-from django.urls import path
+from django.urls import include, path
 
 from . import views
+
 
 app_name = 'example_ads'
 
 urlpatterns = [
-    path('', views.index, name='index'),
+    path('report/', views.report, name='report'),
+    path('', views.constructor, name='constructor'),
+    path('about/', views.about, name='about'),
+    path('demo/', views.index, name='index'),
 ]

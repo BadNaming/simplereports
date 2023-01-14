@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}<title>Сформировать отчет</title>{% endblock %}
+{% block text %}<h1>Сформировать отчет</h1>{% endblock %}
+{% block content %}
+<main>
+  <form>
+  <div class="row">
+    <div class="col-3">
+      <label for="exampleInputDateFrom" class="form-label">Дата начала периода</label>
+      <input type="date" class="form-control" id="exampleInputDateFrom" aria-describedby="DateFrom">
+      <div id="DateFrom" class="form-text">с какого дня начать считать?</div>
+    </div>
+    <div class="col-3">
+      <label for="exampleInputDateTo" class="form-label">Дата завершения периода</label>
+      <input type="date" class="form-control" id="exampleInputDateTo" aria-describedby="DateTo">
+      <div id="DateTo" class="form-text">в какой день закончить считать?</div>
+    </div>
+  </div>
+  <hr>
+  <div class="row">
+    <div class="col-3">
+    <label for="cabinets" class="form-label">Выберите рекламную систему:</label>
+    <select class="form-select" multiple aria-label="bla bla" id="platform">
+      <option selected>ВКонтакте</option>
+      <option value="1">MyTarget</option>
+    </select>
+    </div>
+    <div class="col-3">
+        <label for="cabinets" class="form-label">Выберите кабинеты:</label>
+        <select class="form-select" multiple aria-label="bla bla" id="cabinets">
+          <option selected>Мое солнышко</option>
+          <option value="1">Fazer media</option>
+        </select>
+        </div>
+    <div class="col-3">
+      <label for="cabinets" class="form-label">Выберите кампании:</label>
+      <select class="form-select" multiple aria-label="bla bla" id="campaigns" size="15">
+        <optgroup label="Fazer media">
+          <option selected>кампания 1</option>
+          <option selected>кампания 2</option>
+          <option selected>кампания 3</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="col-3">
+      <label for="cabinets" class="form-label">Тип группировки:</label>
+      <select>
+        <option value="day">За день</option>
+          <option selected="overall" value=>За все время</option>
+      </select>
+    </div>
+    <div class="col-3">
+    <form>
+      <input id="html" type="checkbox">
+      <label for="html">Добавить разбивку по объявлениям</label>
+    </form>
+  </div>
+</div>
+<br>
+<br>
+    <div class="col-12">
+      Выберите метрики в том порядке, в котором они должны отобразиться в отчете:
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-1">
+        <select>
+            <option value="campaign_name">Кампания</option>
+            <option value="impressions">Показы</option>
+            <option value="cpm">CPM</option>
+            <option value="clicks">Clicks</option>
+            <option value="ctr">CTR</option>
+            <option value="cpc">CPC</option>
+            <option value="followers">Подписчики</option>
+            <option value="crfollowers">CR%Подписчики</option>
+            <option value="cpf">CPF</option>
+            <option value="leads">Лиды</option>
+            <option value="crleads">CR%Лиды</option>
+            <option value="cpl">CPL</option>
+            <option value="spent">Spent</option>
+            <option selected="" value=>------</option>
+          </select>
+        </div>
+        <div class="col-1">
+            <select>
+                <option value="campaign_name">Кампания</option>
+                <option value="impressions">Показы</option>
+                <option value="cpm">CPM</option>
+                <option value="clicks">Clicks</option>
+                <option value="ctr">CTR</option>
+                <option value="cpc">CPC</option>
+                <option value="followers">Подписчики</option>
+                <option value="cpf">CPF</option>
+                <option value="leads">Лиды</option>
+                <option value="cpl">CPL</option>
+                <option value="spent">Spent</option>
+                <option selected="" value=>------</option>
+              </select>
+            </div>
+        <div class="col-1">
+        <select>
+            <option value="campaign_name">Кампания</option>
+            <option value="impressions">Показы</option>
+            <option value="cpm">CPM</option>
+            <option value="clicks">Clicks</option>
+            <option value="ctr">CTR</option>
+            <option value="cpc">CPC</option>
+            <option value="followers">Подписчики</option>
+            <option value="cpf">CPF</option>
+            <option value="leads">Лиды</option>
+            <option value="cpl">CPL</option>
+            <option value="spent">Spent</option>
+            <option selected="" value=>------</option>
+          </select>
+        </div>
+        <div class="col-1">
+        <select>
+            <option value="campaign_name">Кампания</option>
+            <option value="impressions">Показы</option>
+            <option value="cpm">CPM</option>
+            <option value="clicks">Clicks</option>
+            <option value="ctr">CTR</option>
+            <option value="cpc">CPC</option>
+            <option value="followers">Подписчики</option>
+            <option value="cpf">CPF</option>
+            <option value="leads">Лиды</option>
+            <option value="cpl">CPL</option>
+            <option value="spent">Spent</option>
+            <option selected="" value=>------</option>
+          </select>
+        </div>
+        <div class="col-1">
+        <select>
+            <option value="campaign_name">Кампания</option>
+            <option value="impressions">Показы</option>
+            <option value="cpm">CPM</option>
+            <option value="clicks">Clicks</option>
+            <option value="ctr">CTR</option>
+            <option value="cpc">CPC</option>
+            <option value="followers">Подписчики</option>
+            <option value="cpf">CPF</option>
+            <option value="leads">Лиды</option>
+            <option value="cpl">CPL</option>
+            <option value="spent">Spent</option>
+            <option selected="" value=>------</option>
+          </select>
+        </div>
+        <div class="col-1">
+            <select>
+                <option value="campaign_name">Кампания</option>
+                <option value="impressions">Показы</option>
+                <option value="cpm">CPM</option>
+                <option value="clicks">Clicks</option>
+                <option value="ctr">CTR</option>
+                <option value="cpc">CPC</option>
+                <option value="followers">Подписчики</option>
+                <option value="cpf">CPF</option>
+                <option value="leads">Лиды</option>
+                <option value="cpl">CPL</option>
+                <option value="spent">Spent</option>
+                <option selected="" value=>------</option>
+              </select>
+            </div>
+        <div class="col-1">
+        <select>
+            <option value="campaign_name">Кампания</option>
+            <option value="impressions">Показы</option>
+            <option value="cpm">CPM</option>
+            <option value="clicks">Clicks</option>
+            <option value="ctr">CTR</option>
+            <option value="cpc">CPC</option>
+            <option value="followers">Подписчики</option>
+            <option value="cpf">CPF</option>
+            <option value="leads">Лиды</option>
+            <option value="cpl">CPL</option>
+            <option value="spent">Spent</option>
+            <option selected="" value=>------</option>
+          </select>
+        </div>
+        <div class="col-1">
+            <select>
+                <option value="campaign_name">Кампания</option>
+                <option value="impressions">Показы</option>
+                <option value="cpm">CPM</option>
+                <option value="clicks">Clicks</option>
+                <option value="ctr">CTR</option>
+                <option value="cpc">CPC</option>
+                <option value="followers">Подписчики</option>
+                <option value="cpf">CPF</option>
+                <option value="leads">Лиды</option>
+                <option value="cpl">CPL</option>
+                <option value="spent">Spent</option>
+                <option selected="" value=>------</option>
+              </select>
+            </div>
+        <div class="col-1">
+        <select>
+            <option value="campaign_name">Кампания</option>
+            <option value="impressions">Показы</option>
+            <option value="cpm">CPM</option>
+            <option value="clicks">Clicks</option>
+            <option value="ctr">CTR</option>
+            <option value="cpc">CPC</option>
+            <option value="followers">Подписчики</option>
+            <option value="cpf">CPF</option>
+            <option value="leads">Лиды</option>
+            <option value="cpl">CPL</option>
+            <option value="spent">Spent</option>
+            <option selected="" value=>------</option>
+          </select>
+        </div>
+        <div class="col-1">
+            <select>
+                <option value="campaign_name">Кампания</option>
+                <option value="impressions">Показы</option>
+                <option value="cpm">CPM</option>
+                <option value="clicks">Clicks</option>
+                <option value="ctr">CTR</option>
+                <option value="cpc">CPC</option>
+                <option value="followers">Подписчики</option>
+                <option value="cpf">CPF</option>
+                <option value="leads">Лиды</option>
+                <option value="cpl">CPL</option>
+                <option value="spent">Spent</option>
+                <option selected="" value=>------</option>
+              </select>
+            </div>
+            <div class="col-1">
+                <select>
+                    <option value="campaign_name">Кампания</option>
+                    <option value="impressions">Показы</option>
+                    <option value="cpm">CPM</option>
+                    <option value="clicks">Clicks</option>
+                    <option value="ctr">CTR</option>
+                    <option value="cpc">CPC</option>
+                    <option value="followers">Подписчики</option>
+                    <option value="cpf">CPF</option>
+                    <option value="leads">Лиды</option>
+                    <option value="cpl">CPL</option>
+                    <option value="spent">Spent</option>
+                    <option selected="" value=>------</option>
+                  </select>
+                </div>
+
+    </div>  
+    <br>
+        <div class="col-2">
+            <button type="submit" class="btn btn-primary">Получить отчет</button></div>
+            </div>  
+    </div>
+</form>
+</main>
+{% endblock %}
