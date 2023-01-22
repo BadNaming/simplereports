@@ -55,6 +55,7 @@ def mytarget_callback(request):
         case.response = current_token
         case.save()
         token = current_token['access_token']
+        # case.user_id = current_token['user_id']
         case.token = token
         case.save()
 
