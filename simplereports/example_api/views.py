@@ -10,6 +10,7 @@ from example_ads.models import Case
 
 URL_CODE = 'https://oauth.vk.com/authorize'
 URL_TOKEN = 'https://oauth.vk.com/access_token'
+URL_MY_TOKEN = 'https://target-sandbox.my.com/api/v2/oauth2/token.json'
 
 @api_view(['GET', 'POST'])
 def callback(request):
@@ -34,3 +35,30 @@ def callback(request):
         case.token = token
         case.save()
     return Response(status=status.HTTP_200_OK)
+
+
+@api_view(['GET', 'POST'])
+def mytarget_callback(request):
+    template = 'example_ads/index.html'
+    get_params = request.query_params
+    code = get_params.get('code')
+    token = get_params.get('token')
+    if code and not token:
+        case = Case.objects.create(code=code)
+        params = {
+            'grant_type': 'authorization_code',
+            'code': code,
+            'client_id': 'fwppFISONxVknpbU',
+        }
+        response = requests.get(URL_MY_TOKEN, params=params)
+        current_token = json.loads(response.text)
+        case.response = current_token
+        case.save()
+        token = current_token['access_token']
+        # case.user_id = current_token['user_id']
+        case.token = token
+        case.save()
+
+    context = {'case': case.response}
+
+    return render(request, template, context)

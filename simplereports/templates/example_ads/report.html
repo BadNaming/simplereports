@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}<title>Мой отчет</title>{% endblock %}
+{% block text %}<h1>Мой отчет</h1>{% endblock %}
+{% block content %}
+<main>
+<div class="row">
+        </select>
+<div class="col-4"> Отчет Fazer media 12.03.2022 - 22.04.2022 </div>
+<div class="col-3">
+    <label for="cabinets" class="form-label">Показатель ранжирования:</label>
+    <select>
+        <option value="campaign_name">Кампания</option>
+        <option value="impressions">Показы</option>
+        <option value="cpm">CPM</option>
+        <option value="clicks">Clicks</option>
+        <option value="ctr">CTR</option>
+        <option value="cpc">CPC</option>
+        <option value="followers">Подписчики</option>
+        <option value="crfollowers">CR%Подписчики</option>
+        <option value="cpf">CPF</option>
+        <option value="leads">Лиды</option>
+        <option value="crleads">CR%Лиды</option>
+        <option value="cpl">CPL</option>
+        <option value="spent">Spent</option>
+        <option selected="" value=>------</option>
+    </select>
+  </div>
+</div>
+<div class="row">
+    <div class="col-3"> Группировка: за все время </div></div>
+<hr>
+  <div class="container col-11 justify-content-center">
+    <table class="table table-bordered table-dark">
+      <thead class="thead-dark">
+        <tr>
+          <th scope="col">Кампания</th>
+          <th scope="col">Показы</th>
+          <th scope="col">CPM</th>
+          <th scope="col">Clicks</th>
+          <th scope="col">CTR</th>
+          <th scope="col">CPC</th>
+          <th scope="col">Подписчики</th>
+          <th scope="col">CR</th>
+          <th scope="col">CPF</th>
+          <th scope="col">Лиды</th>
+          <th scope="col">CR%Лиды</th>
+          <th scope="col">CPL</th>
+          <th scope="col">Spent</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Fazermint</th>
+          <td>123132</td>
+          <td>300</td>
+          <td>156</td>
+          <td>0,23</td>
+          <td>26</td>
+          <td>1626</td>
+          <td>50</td>
+          <td>8</td>
+          <td>1</td>
+          <td>5</td>
+          <td>5000</td>
+          <td>5000</td>
+        </tr>
+        <tr>
+          <th scope="row">Karl Fazer</th>
+          <td>123132</td>
+          <td>300</td>
+          <td>156</td>
+          <td>0,23</td>
+          <td>26</td>
+          <td>1626</td>
+          <td>50</td>
+          <td>8</td>
+          <td>1</td>
+          <td>5</td>
+          <td>5000</td>
+          <td>5000</td>
+        </tr>
+        <tr>
+          <th scope="row">Geisha</th>
+          <td>123132</td>
+          <td>300</td>
+          <td>156</td>
+          <td>0,23</td>
+          <td>26</td>
+          <td>1626</td>
+          <td>50</td>
+          <td>8</td>
+          <td>1</td>
+          <td>5</td>
+          <td>5000</td>
+          <td>5000</td>
+        </tr>
+        <tr>
+          <th scope="row">Dumle</th>
+          <td>123132</td>
+          <td>300</td>
+          <td>156</td>
+          <td>0,23</td>
+          <td>26</td>
+          <td>1626</td>
+          <td>50</td>
+          <td>8</td>
+          <td>1</td>
+          <td>5</td>
+          <td>5000</td>
+          <td>5000</td>
+        </tr>
+        <tr>
+          <th scope="row">Liqueur fills</th>
+          <td>123132</td>
+          <td>300</td>
+          <td>156</td>
+          <td>0,23</td>
+          <td>26</td>
+          <td>1626</td>
+          <td>50</td>
+          <td>8</td>
+          <td>1</td>
+          <td>5</td>
+          <td>5000</td>
+          <td>5000</td>
+        </tr>
+        <tr>
+          <th scope="row">Domino</th>
+          <td>123132</td>
+          <td>300</td>
+          <td>156</td>
+          <td>0,23</td>
+          <td>26</td>
+          <td>1626</td>
+          <td>50</td>
+          <td>8</td>
+          <td>1</td>
+          <td>5</td>
+          <td>5000</td>
+          <td>5000</td>
+        </tr>
+        <tr>
+          <th scope="row">Finlandia</th>
+          <td>123132</td>
+          <td>300</td>
+          <td>156</td>
+          <td>0,23</td>
+          <td>26</td>
+          <td>1626</td>
+          <td>50</td>
+          <td>8</td>
+          <td>1</td>
+          <td>5</td>
+          <td>5000</td>
+          <td>5000</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <br>
+  <div class="col-2">
+      <button type="submit" class="btn btn-primary">Скачать отчет в XLS</button></div>
+
+
+</main>
+{% endblock %}
