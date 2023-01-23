@@ -4,6 +4,8 @@ from django.utils.translation import gettext_lazy as _
 
 from users.managers import UserManager
 
+from example_ads.models import Case
+
 
 class User(AbstractUser):
     """Кастомная модель пользователя"""
