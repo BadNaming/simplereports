@@ -23,7 +23,7 @@ class CabinetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Cabinet
-        # fields = ('id', 'ext_id', 'ext_name')
+        fields = ('id', 'ext_id', 'ext_name')
 
 
 class CampaignSerializer(serializers.ModelSerializer):

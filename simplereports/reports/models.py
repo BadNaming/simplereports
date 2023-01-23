@@ -3,10 +3,10 @@ from django.db import models
 from users.models import User
 
 METRICS = (
-    ('one_answer', 'Единственный возможный ответ'),
-    ('many_answers', 'Множество возможных ответов'),
-    ('string_answer', 'Строчный ввод'),
-    ('corresp_answer', 'Таблица соответствия')
+    ('impressions', 'Показы'),
+    ('CPM', 'Стоимость тысячи показов'),
+    ('clicks', 'Клики по креативам'),
+    ('spent', 'Траты')
 )
 
 STATUS = (
