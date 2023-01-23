@@ -19,10 +19,11 @@ class ReportTaskSerializer(serializers.ModelSerializer):
 
 
 class CabinetSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField()
 
     class Meta:
         model = Cabinet
-        fields = '__all__'
+        fields = ('id', 'ext_id', 'ext_name')
 
 
 class CampaignSerializer(serializers.ModelSerializer):

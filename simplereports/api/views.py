@@ -29,22 +29,27 @@ class ReportTaskViewset(ForbiddenMethodsMixin, viewsets.ModelViewSet):
 @api_view(['GET'])
 def get_info(request):
     data = dict()
+
     data['cabinets'] = []
     cabinet_queryset = Cabinet.objects.all()
     for cabinet in cabinet_queryset:
         obj = dict()
+        obj['id'] = cabinet.id
         obj['ext_id'] = cabinet.ext_id
         obj['ext_name'] = cabinet.ext_name
         data['cabinets'].append(obj)
+
     data['campaigns'] = []
     campaign_queryset = Campaign.objects.all()
     for campaign in campaign_queryset:
         obj = dict()
         obj['ext_id'] = campaign.ext_id
         obj['ext_name'] = campaign.ext_name
-        obj['cabinet'] = campaign.cabinet.ext_id
-        data['cabinets'].append(obj)
-    data['metrics'] = ['one_answer', 'many_answers']
+        obj['cabinet'] = campaign.cabinet.id
+        data['campaigns'].append(obj)
+    data['metrics'] = []
+    for metric in METRICS:
+        data['metrics'].append({metric[0]: metric[1]})
     serializer = ReportInfoSerializer(data=data)
     serializer.is_valid(raise_exception=True)
     return Response(
