@@ -18,7 +18,6 @@ schema_view = get_schema_view(
    permission_classes=[permissions.AllowAny],
 )
 
-from example_api import views
 
 
 urlpatterns = [
