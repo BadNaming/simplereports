@@ -1,4 +1,5 @@
 from django.shortcuts import render
+import secrets
 
 def index(request):
     template = 'example_ads/index.html'
