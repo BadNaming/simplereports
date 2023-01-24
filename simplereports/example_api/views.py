@@ -51,10 +51,10 @@ def mytarget_callback(request):
             'code': code,
             'client_id': 'fwppFISONxVknpbU',
         }
-        response = requests.post(URL_MY_TOKEN, params=params)
+        response = requests.post(URL_MY_TOKEN, data=params)
         current_token = json.loads(response.text)
         case.response = current_token
-        case.save()
+        # case.save()
         # token = current_token['access_token']
         # # case.user_id = user_id
         # case.token = token
