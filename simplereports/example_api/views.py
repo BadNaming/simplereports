@@ -55,11 +55,11 @@ def mytarget_callback(request):
         current_token = json.loads(response.text)
         case.response = current_token
         case.save()
-        token = current_token['access_token']
-        # case.user_id = user_id
-        case.token = token
-        case.save()
+        # token = current_token['access_token']
+        # # case.user_id = user_id
+        # case.token = token
+        # case.save()
 
-    context = {'case': case.response}
+    context = {'response': current_token}
 
     return render(request, template, context)
