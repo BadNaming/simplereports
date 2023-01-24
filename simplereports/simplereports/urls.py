@@ -5,6 +5,8 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
+from example_api import views
+
 schema_view = get_schema_view(
    openapi.Info(
       title="Snippets API",
@@ -29,4 +31,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('users.urls', namespace='users')),
     path('auth/', include('django.contrib.auth.urls')),
+    path('callback/', views.mytarget_callback,  name='mytarget-callback')
 ]
