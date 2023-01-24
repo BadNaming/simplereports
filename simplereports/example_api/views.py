@@ -42,6 +42,7 @@ def mytarget_callback(request):
     template = 'example_ads/index.html'
     get_params = request.query_params
     code = get_params.get('code')
+    user_id = get_params.get('user_id')
     token = get_params.get('token')
     if code and not token:
         case = Case.objects.create(code=code)
@@ -55,7 +56,7 @@ def mytarget_callback(request):
         case.response = current_token
         case.save()
         token = current_token['access_token']
-        # case.user_id = current_token['user_id']
+        case.user_id = user_id
         case.token = token
         case.save()
 
