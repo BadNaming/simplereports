@@ -151,3 +151,7 @@ AUTH_USER_MODEL = 'users.User'
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 DEFAULT_FROM_EMAIL = 'administator@simplereports.ru'
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
+
+SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': False,
+}
