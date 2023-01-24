@@ -1,9 +1,11 @@
 from django.shortcuts import render
 import secrets
 
+
 def index(request):
     template = 'example_ads/index.html'
-    context = {}
+    state = secrets.token_urlsafe(20)
+    context = {'state': state}
     return render(request, template, context)
 
 
