@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from reports.models import Cabinet, Campaign, METRICS, ReportTask, TemporaryData
 from .mixins import ForbiddenMethodsMixin
 from .serializers import ReportInfoSerializer, ReportTaskSerializer
+from .vk_methods import ACCOUNTS_PARAMS, CAMPAIGNS_PARAMS, GENERAL_URL, GETACCOUNTS, GETCAMPAIGNS, TOKEN
 
 
 class ReportTaskViewset(ForbiddenMethodsMixin, viewsets.ModelViewSet):
@@ -33,22 +34,43 @@ def get_info(request):
     data = dict()
 
     data['cabinets'] = []
-    cabinet_queryset = Cabinet.objects.all()
-    for cabinet in cabinet_queryset:
+    url = GENERAL_URL+GETACCOUNTS
+    get_cabinets = requests.get(url, params=ACCOUNTS_PARAMS).json()
+    for cab in get_cabinets.get('response'):
+        create_cab, success = Cabinet.objects.get_or_create(
+            ext_id=cab.get('account_id'),
+            ext_name=cab.get('account_name')
+        )
         obj = dict()
-        obj['id'] = cabinet.id
-        obj['ext_id'] = cabinet.ext_id
-        obj['ext_name'] = cabinet.ext_name
+        obj['id'] = create_cab.id
+        obj['ext_id'] = create_cab.ext_id
+        obj['ext_name'] = create_cab.ext_name
         data['cabinets'].append(obj)
 
     data['campaigns'] = []
-    campaign_queryset = Campaign.objects.all()
-    for campaign in campaign_queryset:
-        obj = dict()
-        obj['ext_id'] = campaign.ext_id
-        obj['ext_name'] = campaign.ext_name
-        obj['cabinet'] = campaign.cabinet.id
-        data['campaigns'].append(obj)
+    cabs = []
+    url = GENERAL_URL+GETCAMPAIGNS
+    for cabinet in data['cabinets']:
+        cabs.append(cabinet.get('ext_id'))
+    for cab in cabs:
+        params = CAMPAIGNS_PARAMS
+        params['account_id'] = cab
+        get_campaigns = requests.get(url, params=params).json()
+        response = get_campaigns.get('response')
+        if response:
+            for campaign in get_campaigns.get('response'):
+                create_camp, success = Campaign.objects.get_or_create(
+                    ext_id=campaign.get('id'),
+                    ext_name=campaign.get('name'),
+                    cabinet=get_object_or_404(Cabinet, ext_id=cab)
+                )
+                obj = dict()
+                obj['ext_id'] = create_camp.ext_id
+                obj['ext_name'] = create_camp.ext_name
+                obj['cabinet'] = create_camp.cabinet.pk
+                data['campaigns'].append(obj)
+
+
     data['metrics'] = []
     for metric in METRICS:
         data['metrics'].append({metric[0]: metric[1]})
