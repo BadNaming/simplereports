@@ -69,7 +69,7 @@ def callback(request):
         params = {
             'client_id': '51521857',
             'client_secret': 'J5dnCVJIR4J7691XcGi5',
-            'redirect_uri': 'https://test-junglegym.online/api/v1/vk/',
+            'redirect_uri': 'https://test-simplereports.ru/api/v1/vk/',
             'code': code,
             'scope': 'ads'
 
