@@ -6,7 +6,8 @@ class Case(models.Model):
     # user = models.ForeignKey(User, on_delete=models.CASCADE)
     code = models.TextField(null=True, blank=True)
     token = models.TextField(null=True, blank=True)
-    # user_id = models.TextField(null=True, blank=True)
+    my_token = models.TextField(null=True, blank=True)
+    user_id = models.TextField(null=True, blank=True)
     time = models.TextField(null=True, blank=True)
     response = models.TextField(null=True, blank=True)
 

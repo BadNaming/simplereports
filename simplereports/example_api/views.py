@@ -39,27 +39,27 @@ def callback(request):
 
 @api_view(['GET', 'POST'])
 def mytarget_callback(request):
-    template = 'example_ads/index.html'
+    template = 'example_ads/callback.html'
     get_params = request.query_params
     code = get_params.get('code')
-    # user_id = get_params.get('user_id')
-    token = get_params.get('token')
-    if code and not token:
-        case = Case.objects.create(code=code)
-        params = {
-            'grant_type': 'authorization_code',
-            'code': code,
-            'client_id': 'fwppFISONxVknpbU',
-        }
-        response = requests.post(URL_MY_TOKEN, data=params)
-        current_token = json.loads(response.text)
-        case.response = current_token
-        # case.save()
-        # token = current_token['access_token']
-        # # case.user_id = user_id
-        # case.token = token
-        # case.save()
+    user_id = get_params.get('user_id')
+    case = Case.objects.create(code=code)
+    params = {
+        'grant_type': 'authorization_code',
+        'code': code,
+        'client_id': 'fwppFISONxVknpbU',
+    }
+    response = requests.post(URL_MY_TOKEN, data=params)
+    current_token = json.loads(response.text)
+    case.response = current_token
+    case.user_id = user_id
+    case.save()
+    case.my_token = current_token['access_token']
+    case.save()
 
-    context = {'response': current_token}
+    context = {'user_id': case.user_id,
+               'token': case.my_token,
+               'response': current_token,
+               }
 
     return render(request, template, context)
