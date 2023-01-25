@@ -1,3 +1,5 @@
+import time
+
 import requests
 import json
 from django.shortcuts import get_object_or_404
@@ -69,6 +71,7 @@ def get_info(request):
                 obj['ext_name'] = create_camp.ext_name
                 obj['cabinet'] = create_camp.cabinet.pk
                 data['campaigns'].append(obj)
+        time.sleep(1)
 
 
     data['metrics'] = []
