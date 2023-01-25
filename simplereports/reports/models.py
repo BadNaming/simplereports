@@ -58,3 +58,9 @@ class ReportTask(models.Model):
     cabinets = models.TextField()
     campaigns = models.TextField()
     metrics = models.TextField()
+
+
+class TemporaryData(models.Model):
+    code = models.CharField(max_length=1000, null=True)
+    token = models.CharField(max_length=1000, null=True)
+    response = models.TextField(null=True, blank=True)
