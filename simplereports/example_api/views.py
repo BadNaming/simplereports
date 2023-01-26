@@ -48,6 +48,7 @@ def mytarget_callback(request):
         'grant_type': 'authorization_code',
         'code': code,
         'client_id': 'fwppFISONxVknpbU',
+        'permanent': 'true',
     }
     response = requests.post(URL_MY_TOKEN, data=params)
     current_token = json.loads(response.text)
