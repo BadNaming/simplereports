@@ -44,7 +44,7 @@ def report(request):
 
 def mytarget_campaings():
     headers = {
-        'Authorization': 'Bearer vzaTe6vgpb9PI9izFBXnGFaTJM727IJFRpWJLw5hLj2O5mRVnEhNhfQ9qzYaSNq5P8maB5UfqWlyfPbOpZzXKPbhTcHRmuoTpQKd6Q2vIscyGaTbW73QxjpXGqa90GQu0dsoXi7JAKmVdmsGYmgCaSiekcJabm0PENwHr1HUdt5icEa0zdFVxhuPvldo16J3oz6jEQSJBmq6ec5r4z4YCI8xhkRqjU',
+        'Authorization': 'Bearer NeNxx9fYYNg5ULI54nFUzTFFiavMoly2v9ZiykGQRgWPZkP2KDzHtcJ0iUX6ioMN0jOUPewSY0a9wTLGbapMMjRh5jIuR2ibhPX60TzADXsqV9Qd1TcrIaqKXDu6vQHyBscjiwA3jRaQgkjLdzAfVBNbaMNS9a9nWcrhakohTZSyqkcaf07LkIrlQR2HTPWDOBDqKSldYj7h6MOjytxiCG3z8cW0knehu7jDe30mY4NUFh3U7e1aXLhpNYyg',
     }
     campaigns = requests.get(
         'https://target-sandbox.my.com/api/v2/campaigns.json', headers=headers
