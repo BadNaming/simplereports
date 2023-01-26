@@ -37,7 +37,6 @@ def callback(request):
     return Response(status=status.HTTP_200_OK)
 
 
-@api_view(['GET', 'POST'])
 def mytarget_callback(request):
     template = 'example_ads/callback.html'
     get_params = request.query_params
