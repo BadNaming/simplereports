@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from reports.models import Cabinet, Campaign, METRICS, ReportTask
+from reports.models import Cabinet, Campaign, ReportTask
 from .validators import validate_metrics
 
 
@@ -33,7 +33,6 @@ class CampaignSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-
 class ReportInfoSerializer(serializers.Serializer):
     """
     Сериализатор для получения инфы для создания задачи на отчет
@@ -42,7 +41,6 @@ class ReportInfoSerializer(serializers.Serializer):
     cabinets = CabinetSerializer(many=True)
     campaigns = CampaignSerializer(many=True)
     metrics = serializers.ListField(validators=[validate_metrics, ])
-
 
 
 class Report(serializers.ModelSerializer):

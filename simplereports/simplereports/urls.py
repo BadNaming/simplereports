@@ -19,12 +19,22 @@ schema_view = get_schema_view(
 )
 
 
-
 urlpatterns = [
-    re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
-    re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-    path('', include('example_ads.urls', namespace='ads')),
+    re_path(
+        r'^swagger(?P<format>\.json|\.yaml)$',
+        schema_view.without_ui(cache_timeout=0),
+        name='schema-json'
+    ),
+    re_path(
+        r'^swagger/$',
+        schema_view.with_ui('swagger', cache_timeout=0),
+        name='schema-swagger-ui'
+    ),
+    re_path(
+        r'^redoc/$',
+        schema_view.with_ui('redoc', cache_timeout=0),
+        name='schema-redoc'
+    ),
     path('api/', include('api.urls')),
     path('admin/', admin.site.urls),
     path('auth/', include('users.urls', namespace='users')),
