@@ -1,16 +1,28 @@
+import json
+import requests
 import time
 
-import requests
-import json
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from reports.models import Cabinet, Campaign, METRICS, ReportTask, TemporaryData
+from reports.models import (
+    Cabinet,
+    Campaign,
+    METRICS,
+    ReportTask,
+    TemporaryData
+)
 from .mixins import ForbiddenMethodsMixin
 from .serializers import ReportInfoSerializer, ReportTaskSerializer
-from .vk_methods import ACCOUNTS_PARAMS, CAMPAIGNS_PARAMS, GENERAL_URL, GETACCOUNTS, GETCAMPAIGNS, TOKEN
+from .vk_config import (
+    ACCOUNTS_PARAMS,
+    CAMPAIGNS_PARAMS,
+    GENERAL_URL,
+    GETACCOUNTS,
+    GETCAMPAIGNS
+)
 
 
 class ReportTaskViewset(ForbiddenMethodsMixin, viewsets.ModelViewSet):
@@ -28,7 +40,6 @@ class ReportTaskViewset(ForbiddenMethodsMixin, viewsets.ModelViewSet):
             campaigns=camps_for_save,
             metrics=mets_for_save
         )
-
 
 
 @api_view(['GET'])
@@ -73,7 +84,6 @@ def get_info(request):
                 data['campaigns'].append(obj)
         time.sleep(1)
 
-
     data['metrics'] = []
     for metric in METRICS:
         data['metrics'].append({metric[0]: metric[1]})
@@ -99,7 +109,10 @@ def callback(request):
             'scope': 'ads'
 
         }
-        response = requests.get('https://oauth.vk.com/access_token', params=params)
+        response = requests.get(
+            'https://oauth.vk.com/access_token',
+            params=params
+        )
         current_token = json.loads(response.text)
         tem_data.response = current_token
         tem_data.save()

@@ -33,7 +33,6 @@ class Cabinet(models.Model):
     )
 
 
-
 class Campaign(models.Model):
     ext_id = models.IntegerField(
         verbose_name='Внешний ID кампании'

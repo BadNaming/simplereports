@@ -8,4 +8,3 @@ class ForbiddenMethodsMixin:
 
     def partial_update(self, request, *args, **kwargs):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
