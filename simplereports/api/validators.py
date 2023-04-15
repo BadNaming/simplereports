@@ -5,7 +5,6 @@ from reports.models import METRICS
 
 def validate_metrics(values):
     check_list = [i[0] for i in METRICS]
-    print(check_list)
     for v in values:
         if v not in check_list:
             raise ValidationError('Недопустимая метрика')
