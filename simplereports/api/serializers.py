@@ -40,7 +40,7 @@ class ReportInfoSerializer(serializers.Serializer):
 
     cabinets = CabinetSerializer(many=True)
     campaigns = CampaignSerializer(many=True)
-    metrics = serializers.ListField(validators=[validate_metrics, ])
+    metrics = serializers.ListField()
 
 
 class Report(serializers.ModelSerializer):
