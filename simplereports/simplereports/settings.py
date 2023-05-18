@@ -81,8 +81,6 @@ LOGIN_URL = 'users:login'
 LOGIN_REDIRECT_URL = 'example_ads:index2'
 
 
-
-
 DATABASES = {
     'default': {
         'ENGINE': os.getenv('DB_ENGINE', default='django.db.backends.sqlite3'),
@@ -157,13 +155,7 @@ REST_FRAMEWORK = {
 DJOSER = {
     'LOGIN_FIELD': 'email',
     'HIDE_USERS': False,
-    # 'SERIALIZERS': {
-    #     'user': 'example_api.serializers.UserSerializer',
-    #     'user_list': 'example_api.serializers.UserSerializer',
-    #     'current_user': 'example_api.serializers.UserSerializer',
-    # },
     'PERMISSIONS': {
-        'user_list': ['rest_framework.permissions.AllowAny'],
         'user': ['rest_framework.permissions.IsAuthenticated'],
     },
 }

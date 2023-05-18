@@ -1,5 +1,5 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from users.managers import UserManager
@@ -26,9 +26,6 @@ class User(AbstractUser):
         'Client secret ВК',
         max_length=200,
         blank=True)
-    is_staff = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
-    is_superuser = models.BooleanField(default=False)
 
     username = None
 

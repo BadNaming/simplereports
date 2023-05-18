@@ -1,8 +1,11 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from reports.models import Cabinet, Campaign, ReportTask
-from users.models import User
+
 from .validators import validate_metrics
+
+User = get_user_model()
 
 
 class ReportTaskSerializer(serializers.ModelSerializer):
@@ -58,8 +61,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'email', 
+        fields = ('id', 'email',
                   'first_name ', 'last_name',
                   'phone_number', 'vk_client_id',
                   'vk_client_secret')
-
