@@ -1,7 +1,11 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from reports.models import Cabinet, Campaign, ReportTask
+
 from .validators import validate_metrics
+
+User = get_user_model()
 
 
 class ReportTaskSerializer(serializers.ModelSerializer):
@@ -48,3 +52,16 @@ class Report(serializers.ModelSerializer):
     Сериализатор для выдачи отчета на сайте
     """
     pass
+
+
+class UserSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для работы с моделью User.
+    """
+
+    class Meta:
+        model = User
+        fields = ('id', 'email',
+                  'first_name ', 'last_name',
+                  'phone_number', 'vk_client_id',
+                  'vk_client_secret')

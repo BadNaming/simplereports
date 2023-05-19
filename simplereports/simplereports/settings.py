@@ -38,9 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'drf_yasg',
-
     'users.apps.UsersConfig',
     'rest_framework',
+    'rest_framework.authtoken',
+    'djoser',
     'api.apps.ApiConfig',
     'reports.apps.ReportsConfig'
 ]
@@ -78,8 +79,6 @@ WSGI_APPLICATION = 'simplereports.wsgi.application'
 
 LOGIN_URL = 'users:login'
 LOGIN_REDIRECT_URL = 'example_ads:index2'
-
-
 
 
 DATABASES = {
@@ -146,4 +145,17 @@ EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
 
 SWAGGER_SETTINGS = {
     'USE_SESSION_AUTH': False,
+}
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+}
+
+DJOSER = {
+    'LOGIN_FIELD': 'email',
+    'HIDE_USERS': False,
+    'PERMISSIONS': {
+        'user': ['rest_framework.permissions.IsAuthenticated'],
+    },
 }
