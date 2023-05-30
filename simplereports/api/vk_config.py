@@ -1,13 +1,25 @@
-GENERAL_URL = 'https://api.vk.com/method/'
-TOKEN = 'vk1.a.2D0w7nFjNu5npkHaxIOMYIGpSP0dre_WXR_PEvbMoStAf7Tvv4QSMuAMUwQVM6Tbmx_5OZshziWzfhRPCTWMz11jFaS5CJ3es3GWX-bz8QvilHhHyOOYRcA7ch-pl7oXaPUBoLSXJVAnbQRta6Jwx4-Ce5qVMMAPt1ZMspUeo2SSgIvWcdaETZUGXFDK4djOBv_OUTZkhu9YaMmqICl8pw'
+GENERAL_URL = 'https://ads.vk.com/api/v2/'
+TOKEN = 'eKppLLD7bq3R58MvrO7knzmW9FAA50WErNre2RyPapDSnI5Ecbw1LHVfhb212ie9ZRKZnbngzo4SnOQ9JCMnIS8A5OfkjuXdiubkXjfW8JfdzFLbciGYJaKVIDjVk9D18FcTD7kUbFNzAgXYidtHlCK9uP8OI1Rutxs9k2tTL3JLlbigavm38IKxZ43w6dcJDyRm2d6WvoonPajnmVFwhd6GZiOl'
+REQUEST_HEADERS = {
+    'Authorization': f'Bearer {TOKEN}',
+}
 
-GETACCOUNTS = 'ads.getAccounts'
-ACCOUNTS_PARAMS = {
-    'access_token': TOKEN,
-    'v': 5.131
-}
-GETCAMPAIGNS = 'ads.getCampaigns'
-CAMPAIGNS_PARAMS = {
-    'access_token': TOKEN,
-    'v': 5.131,
-}
+
+# инфо о пользователе
+GETUSER = 'user.json'
+
+# Список кампаний
+GETPLANS = 'statistics/ad_plans/summary.json'
+
+# метрики
+METRICS_VK = (
+    'shows',
+    'cpm',
+    'clicks',
+    'ctr',
+    'cpc',
+    'goals',
+    'cr',
+    'cpa',
+    'spent',
+)

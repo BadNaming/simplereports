@@ -47,7 +47,7 @@ class ReportInfoSerializer(serializers.Serializer):
     metrics = serializers.ListField()
 
 
-class Report(serializers.ModelSerializer):
+class ReportSerializer(serializers.Serializer):
     """
     Сериализатор для выдачи отчета на сайте
     """
