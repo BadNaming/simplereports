@@ -61,7 +61,6 @@ class ReportSerializer(serializers.Serializer):
     Сериализатор для выдачи отчета на сайте
     """
     campaigns = CampaignSerializer(many=True)
-    status = serializers.CharField(default='OK')
 
 
 class UserSerializer(serializers.ModelSerializer):
