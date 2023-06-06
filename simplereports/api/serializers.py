@@ -30,28 +30,37 @@ class CabinetSerializer(serializers.ModelSerializer):
         fields = ('id', 'ext_id', 'ext_name')
 
 
-class CampaignSerializer(serializers.ModelSerializer):
+# class ReportInfoSerializer(serializers.Serializer):
+#     """
+#     Сериализатор для получения инфы для создания задачи на отчет
+#     """
+#
+#     cabinets = CabinetSerializer(many=True)
+#     campaigns = CampaignSerializer(many=True)
+#     metrics = serializers.ListField()
 
-    class Meta:
-        model = Campaign
-        fields = '__all__'
 
-
-class ReportInfoSerializer(serializers.Serializer):
+class CampaignSerializer(serializers.Serializer):
     """
-    Сериализатор для получения инфы для создания задачи на отчет
+    Сериализатор для метрик
     """
+    campaign = serializers.IntegerField()
+    shows = serializers.IntegerField()
+    cpm = serializers.FloatField()
+    clicks = serializers.IntegerField()
+    ctr = serializers.FloatField()
+    cpc = serializers.FloatField()
+    goals = serializers.IntegerField()
+    cr = serializers.IntegerField()
+    cpa = serializers.FloatField()
+    spent = serializers.FloatField()
 
-    cabinets = CabinetSerializer(many=True)
-    campaigns = CampaignSerializer(many=True)
-    metrics = serializers.ListField()
 
-
-class Report(serializers.ModelSerializer):
+class ReportSerializer(serializers.Serializer):
     """
     Сериализатор для выдачи отчета на сайте
     """
-    pass
+    campaigns = CampaignSerializer(many=True)
 
 
 class UserSerializer(serializers.ModelSerializer):
