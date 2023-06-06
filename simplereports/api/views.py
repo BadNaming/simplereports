@@ -1,11 +1,10 @@
 import requests
-from requests.exceptions import HTTPError
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 
-from exceptions import DataNotReceivedException, InvalidDataException
+from exceptions import DataNotReceivedException, InvalidDataException, ResponseNotRecievedException
 from .serializers import ReportSerializer
 from .vk_config import (
     GENERAL_URL,
@@ -21,7 +20,7 @@ def get_report(request):
     data = {'campaigns': []}
     if requests.get(url,
                     headers=REQUEST_HEADERS).status_code != HTTP_200_OK:
-        raise HTTPError('Ответ не получен')
+        raise ResponseNotRecievedException()
 
     plans = requests.get(url, headers=REQUEST_HEADERS).json()
     for campaign in plans.get('items'):

@@ -11,3 +11,9 @@ class InvalidDataException(APIException):
     status_code = 400
     default_detail = 'Некорректные данные'
     default_code = 'invalid_data'
+
+
+class ResponseNotRecievedException(APIException):
+    status_code = 400
+    default_detail = 'Ответ не получен'
+    default_code = 'response_not_recieve'
