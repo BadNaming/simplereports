@@ -1,17 +1,18 @@
-import requests
+from exceptions import (DataNotReceivedException, InvalidDataException,
+                        ResponseNotRecievedException)
 
+import requests
+from django.http import HttpResponse
+from rest_framework import viewsets
 from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 
-from exceptions import DataNotReceivedException, InvalidDataException, ResponseNotRecievedException
-from .serializers import ReportSerializer
-from .vk_config import (
-    GENERAL_URL,
-    GETPLANS,
-    REQUEST_HEADERS,
-    METRICS_VK
-)
+from reports.models import Report
+
+from .serializers import ReportSerializer, UserReportsSerializer
+from .vk_config import GENERAL_URL, GETPLANS, METRICS_VK, REQUEST_HEADERS
 
 
 @api_view(['GET'])
@@ -39,3 +40,30 @@ def get_report(request):
         raise DataNotReceivedException()
 
     return Response(serializer.data, status=HTTP_200_OK)
+
+
+@api_view(['GET'])
+def download_report(request, *args, **kwargs):
+    """
+    Функция загружает XLS файл с готовым отчетом.
+    """
+    report_id = kwargs.get('pk')
+    report = Report.objects.filter(id=report_id).get()
+    with open(report.url/report.file_name, 'rb') as file:
+        response = HttpResponse(file, content_type='text/xls')
+    response['Content-Disposition'] = f'attachment; filename={report.file_name}'
+    return response
+
+
+class ReportViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Обрабатывает запросы только от авторизованного пользователя.
+    Методы list и retrive отдают только те отчеты,
+    которые принадлежат юзеру.
+    """
+    serializer_class = UserReportsSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Report.objects.filter(
+            user=self.request.user)
