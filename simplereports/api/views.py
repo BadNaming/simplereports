@@ -16,6 +16,11 @@ from .vk_config import (
 
 @api_view(['GET'])
 def get_report(request):
+    """
+    Получаем статистику по всем кампаниям
+    учетной записи по адресу ads.vk.com/api/v2/statistics/ad_plans/summary.json
+    сериализуем и выдаем ее на эндпоинт v1/report/
+    """
     url = GENERAL_URL + GETPLANS
     data = {'campaigns': []}
     if requests.get(url,
