@@ -1,6 +1,8 @@
+from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import models
 
-from users.models import User
+User = get_user_model()
 
 METRICS = (
     ('impressions', 'Показы'),
@@ -63,3 +65,35 @@ class TemporaryData(models.Model):
     code = models.CharField(max_length=1000, null=True)
     token = models.CharField(max_length=1000, null=True)
     response = models.TextField(null=True, blank=True)
+
+
+class Report(models.Model):
+    """
+    Модель отчета. Используется для сохранения готового отчета
+    в базе и последующего скачивания в XLS в личном кабинете.
+    """
+    REPORT_STATUS_CHOICES = [
+        ('process', 'В процессе формирования'),
+        ('ready', 'Сформирован'),
+        ('error', 'Ошибка формирования')]
+    title = models.CharField(
+        max_length=100,
+        verbose_name='Заголовок отчета')
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='reports',
+        verbose_name='Автор отчета')
+    status = models.CharField(
+        max_length=100,
+        choices=REPORT_STATUS_CHOICES,
+        default='process')
+    date = models.DateTimeField(
+        verbose_name='Дата формирования отчета',
+        auto_now_add=True)
+    file_name = models.CharField(
+        max_length=100,
+        verbose_name='Название файла')
+    url = models.FilePathField(
+        path=settings.REPORTS_ROOT,
+        allow_files=True)

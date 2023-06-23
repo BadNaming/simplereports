@@ -1,6 +1,5 @@
 from simplereports.settings import TOKEN
 
-
 GENERAL_URL = 'https://ads.vk.com/api/v2/'
 REQUEST_HEADERS = {
     'Authorization': f'Bearer {TOKEN}',
