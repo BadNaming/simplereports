@@ -6,8 +6,17 @@ from users.managers import UserManager
 
 
 class User(AbstractUser):
-    """Кастомная модель пользователя"""
-
+    """Кастомная модель пользователя
+    Attrs:
+    - email: email пользователя, используется для входа в сервис
+    - first_name: имя пользователя
+    - last_name: фамилия пользователя
+    - phone_number: номер телефона пользователя
+    - vk_client_id: идентификатор, получаемый в поддержке вк
+    - vk_client_secret: секрет, получаемый в поддержке вк
+    - vk_client_token: персональный токен, для получения нужно отправить
+    запрос к API ВК и передать vk_client_id и vk_client_secret
+    """
     email = models.EmailField(_('email address'), unique=True)
     first_name = models.CharField(
         'Имя',
@@ -26,6 +35,10 @@ class User(AbstractUser):
         'Client secret ВК',
         max_length=200,
         blank=True)
+    vk_client_token = models.CharField(
+        'Токен доступа к API ВК',
+        max_length=200,
+        blank=True)
 
     username = None
 
@@ -42,3 +55,4 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.first_name
+66
