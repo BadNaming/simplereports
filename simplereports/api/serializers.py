@@ -71,9 +71,9 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'email',
-                  'first_name ', 'last_name',
+                  'first_name', 'last_name',
                   'phone_number', 'vk_client_id',
-                  'vk_client_secret')
+                  'vk_client_secret', 'vk_client_token')
 
 
 class UserReportsSerializer(serializers.ModelSerializer):
