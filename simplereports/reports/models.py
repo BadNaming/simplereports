@@ -4,67 +4,53 @@ from django.db import models
 
 User = get_user_model()
 
-METRICS = (
-    ('impressions', 'Показы'),
-    ('CPM', 'Стоимость тысячи показов'),
-    ('clicks', 'Клики по креативам'),
-    ('spent', 'Траты')
-)
 
-STATUS = (
-    ('one_answer', 'Единственный возможный ответ'),
-    ('many_answers', 'Множество возможных ответов'),
-    ('string_answer', 'Строчный ввод'),
-    ('corresp_answer', 'Таблица соответствия')
-)
-
-
-class Cabinet(models.Model):
-    # user = models.ForeignKey(
-    #     User,
-    #     on_delete=models.CASCADE,
-    #     related_name='cabinets',
-    #     verbose_name='Владелец кабинета'
-    # )
-    ext_id = models.IntegerField(
-        verbose_name='Внешний ID кабинета'
-    )
-    ext_name = models.CharField(
-        max_length=100,
-        verbose_name='Внешнее название кабинета'
-    )
-
-
-class Campaign(models.Model):
-    ext_id = models.IntegerField(
-        verbose_name='Внешний ID кампании'
-    )
-    ext_name = models.CharField(
-        max_length=100,
-        verbose_name='Внешнее название кампании'
-    )
-    cabinet = models.ForeignKey(
-        Cabinet,
+class AdPlan(models.Model):
+    """
+    Модель рекламных кампаний.
+    Данные для создания записи в БД берутся
+    из ответа на запрос к GET /api/v2/ad_plans.json.
+    Attrs:
+    - ad_plan_id: уникальный идентификатор рекламной кампании
+    в рамках ВКонтакте
+    - name: название рекламной кампании
+    - user: владелец рекламной кампании
+    """
+    ad_plan_id = models.CharField(
+        max_length=10,
+        verbose_name='id рекламной кампании во ВКонтакте')
+    name = models.CharField(
+        max_length=300,
+        verbose_name='Название рекламной кампании')
+    user = models.ForeignKey(
+        User,
         on_delete=models.CASCADE,
-        related_name='campaigns',
-        verbose_name='Кабинет принадлежности'
-    )
+        related_name='ad_plans',
+        verbose_name='Владелец рекламных кампаний')
 
 
-class ReportTask(models.Model):
-    create_date = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата создания задачи'
-    )
-    cabinets = models.TextField()
-    campaigns = models.TextField()
-    metrics = models.TextField()
-
-
-class TemporaryData(models.Model):
-    code = models.CharField(max_length=1000, null=True)
-    token = models.CharField(max_length=1000, null=True)
-    response = models.TextField(null=True, blank=True)
+class Statistics(models.Model):
+    """
+    Модель для выгрузки статистики из ВКонтакте.
+    1 запись - статистика за 1 сутки по 1 рекламной кампании.
+    Attrs:
+    - ad_plan: рекламная кампания
+    - date: дата
+    - shows: показы
+    - clicks: клики
+    - goals: целевые показатели
+    - spent: расходы
+    """
+    ad_plan = models.ForeignKey(
+        AdPlan,
+        on_delete=models.CASCADE,
+        related_name='statistics',
+        verbose_name='Статистика за сутки')
+    date = models.DateField(verbose_name='Дата')
+    shows = models.IntegerField(verbose_name='Показы')
+    clicks = models.IntegerField(verbose_name='Клики')
+    goals = models.IntegerField(verbose_name='Целевые действия')
+    spent = models.CharField(verbose_name='Расходы')
 
 
 class Report(models.Model):
