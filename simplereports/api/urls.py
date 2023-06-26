@@ -8,8 +8,6 @@ router_v1.register('my_reports', ReportViewSet, basename='my_reports')
 
 
 urlpatterns = [
-    # path('v1/info/', get_info, name='get_info'),
-    # path('v1/vk/', callback, name='callback'),
     path('v1/', include(router_v1.urls)),
     path('', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),

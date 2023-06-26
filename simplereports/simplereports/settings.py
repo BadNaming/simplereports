@@ -82,9 +82,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'simplereports.wsgi.application'
 
-LOGIN_URL = 'users:login'
-LOGIN_REDIRECT_URL = 'example_ads:index2'
-
 
 DATABASES = {
     'default': {
@@ -161,6 +158,11 @@ REST_FRAMEWORK = {
 DJOSER = {
     'LOGIN_FIELD': 'email',
     'HIDE_USERS': False,
+    'SERIALIZERS': {
+        'user': 'api.serializers.UserSerializer',
+        'user_list': 'api.serializers.UserSerializer',
+        'current_user': 'api.serializers.UserSerializer',
+    },
     'PERMISSIONS': {
         'user': ['rest_framework.permissions.IsAuthenticated'],
     },
