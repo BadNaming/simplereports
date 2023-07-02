@@ -49,7 +49,6 @@ class Statistics(models.Model):
     date = models.DateField(verbose_name='Дата')
     shows = models.IntegerField(verbose_name='Показы')
     clicks = models.IntegerField(verbose_name='Клики')
-    goals = models.IntegerField(verbose_name='Целевые действия')
     spent = models.CharField(verbose_name='Расходы')
 
 
