@@ -31,6 +31,9 @@ class AdPlan(models.Model):
     def __str__(self):
         return f"{str(self.name)} (ID {str(self.ad_plan_id)}) - {str(self.user)}"
 
+    class Meta:
+        unique_together = ("ad_plan_id", "user")
+
 
 class Statistics(models.Model):
     """
@@ -58,6 +61,9 @@ class Statistics(models.Model):
 
     def __str__(self):
         return str(self.ad_plan) + " " + str(self.date)
+
+    class Meta:
+        unique_together = ("ad_plan", "date")
 
 
 class Report(models.Model):

@@ -18,6 +18,12 @@ from rest_framework import serializers
 #     cabinets = CabinetSerializer(many=True)
 #     campaigns = CampaignSerializer(many=True)
 #     metrics = serializers.ListField()
+class AdPlanSerializer(serializers.Serializer):
+    """
+    Сериализатор для получения списка рекламных кампаний
+    """
+
+    ad_plan_id = serializers.IntegerField()
 
 
 class CampaignSerializer(serializers.Serializer):
@@ -74,14 +80,12 @@ class UserReportsSerializer(serializers.ModelSerializer):
         fields = ("id", "title", "status", "user", "date", "file_name", "url")
 
 
-class StatisticsSerializer(serializers.Serializer):
-    """
-    Сериализатор для работы с моделью Statistics.
-    """
+class StatisticsSerializer(serializers.ModelSerializer):
+    ad_plan_id = serializers.IntegerField(source="ad_plan.ad_plan_id")
 
     class Meta:
         model = Statistics
-        fields = ("ad_plan", "date", "shows", "clicks", "spent")
+        fields = ("ad_plan_id", "date", "shows", "clicks", "spent")
 
 
 class DailySerializer(serializers.Serializer):
