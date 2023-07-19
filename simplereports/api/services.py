@@ -153,7 +153,6 @@ def get_daily_data(campaigns, user, start_date=None) -> Union[Response, list]:
     if not start_date:
         start_date = datetime.datetime.strftime(get_last_date(campaigns), "%Y-%m-%d")
 
-    print(start_date)
     daily_data_response = requests.get(
         f"{GENERAL_URL}{GETPLANSDAY}"
         f"?id={','.join(list(map(str, campaigns)))}"
@@ -381,5 +380,5 @@ def create_report(
             ] = f"attachment; filename={report.file_name}"
         return response
     return Response(
-        {"message": "Ошибка формирования отчета"}, status=HTTP_400_BAD_REQUEST
+        {"error": "Ошибка формирования отчета"}, status=HTTP_400_BAD_REQUEST
     )

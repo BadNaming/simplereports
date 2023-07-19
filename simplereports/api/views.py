@@ -2,37 +2,79 @@ import requests
 
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import viewsets
+from rest_framework.decorators import api_view, parser_classes, permission_classes
+from rest_framework.parsers import JSONParser
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.status import HTTP_200_OK
+
 from exceptions import (
     DataNotReceivedException,
     InvalidDataException,
     ResponseNotRecievedException,
 )
 from reports.models import AdPlan, Report
-from rest_framework import viewsets
-from rest_framework.decorators import api_view, permission_classes, parser_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.parsers import JSONParser
-from rest_framework.response import Response
-from rest_framework.status import HTTP_200_OK
-
 from .serializers import ReportSerializer, UserReportsSerializer
 from .services import (
-    create_report,
-    get_daily_data,
-    get_ad_plans,
     add_statistics_to_db,
+    create_report,
+    get_ad_plans,
+    get_daily_data,
 )
-from .vk_config import (
-    GENERAL_URL,
-    GETPLANS,
-    METRICS_VK,
-    REQUEST_HEADERS,
-)
-
+from .vk_config import GENERAL_URL, GETPLANS, METRICS_VK, REQUEST_HEADERS
 
 User = get_user_model()
 
 
+@swagger_auto_schema(
+    method="POST",
+    manual_parameters=[
+        openapi.Parameter(
+            "start_date",
+            openapi.TYPE_OBJECT,
+            description="Дата начала периода",
+            type=openapi.TYPE_STRING,
+            required=False,
+        )
+    ],
+    responses={
+        200: openapi.Response(
+            "Успешное выполнение запроса",
+            schema=openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        "ad_plan_id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "date": openapi.Schema(
+                            type=openapi.TYPE_STRING, format="date"
+                        ),
+                        "shows": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "clicks": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "spent": openapi.Schema(type=openapi.TYPE_STRING),
+                    },
+                ),
+            ),
+        ),
+        "4xx": openapi.Response(
+            "Ошибка клиента",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={"error": openapi.Schema(type=openapi.TYPE_STRING)},
+            ),
+        ),
+        "5xx": openapi.Response(
+            "Ошибка сервера",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={"error": openapi.Schema(type=openapi.TYPE_STRING)},
+            ),
+        ),
+    },
+)
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 @parser_classes((JSONParser,))
@@ -42,10 +84,9 @@ def add_daily_data(request, start_date=None, *args, **kwargs):
     для всех рекламных кампаний, связанных с аккаунтом пользователя в VK,
     и сохраняет ее в базе данных.
 
-    :param request: Запрос.
-    :param start_date: Дата, с которой нужно получить статистику.
-
-    :return: Сообщение об успешном выполнении запроса.
+    Параметры:
+    - start_date (необязательный) - дата начала периода, за который
+    запрашивается статистика.
 
     Разрешения:
     - Пользователь должен быть авторизован.
@@ -97,12 +138,70 @@ def add_daily_data(request, start_date=None, *args, **kwargs):
     return Response(query, status=HTTP_200_OK)
 
 
+@swagger_auto_schema(
+    method="POST",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "start_date": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                format="date",
+                description="Дата начала периода",
+            ),
+            "end_date": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                format="date",
+                description="Дата окончания периода",
+            ),
+            "ad_plans": openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(
+                    type=openapi.TYPE_INTEGER,
+                    description="Список идентификаторов рекламных кампаний",
+                ),
+            ),
+        },
+        required=["start_date", "end_date"],
+    ),
+    responses={
+        200: openapi.Response(
+            "Успешное выполнение запроса",
+            schema=openapi.Schema(
+                type=openapi.TYPE_FILE,
+                description="Excel-файл с отчетом",
+            ),
+        ),
+        "4xx": openapi.Response(
+            "Ошибка клиента",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={"error": openapi.Schema(type=openapi.TYPE_STRING)},
+            ),
+        ),
+        "5xx": openapi.Response(
+            "Ошибка сервера",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={"error": openapi.Schema(type=openapi.TYPE_STRING)},
+            ),
+        ),
+    },
+)
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 @parser_classes((JSONParser,))
 def create_report_for_the_period(request):
-    if not request.body:
-        raise DataNotReceivedException()
+    """
+    Формирует отчет по кампаниям учетной записи
+    за указанный период времени и возвращает его в виде файла.
+
+    Параметры:
+    - start_date - дата начала периода, за который запрашивается статистика (обязательный).
+    - end_date - дата окончания периода, за который запрашивается статистика (обязательный).
+    - ad_plans - список идентификаторов рекламных кампаний,
+    по которым запрашивается статистика (необязательный).
+    """
+
     start_date = request.data.get("start_date")
     end_date = request.data.get("end_date")
     if not start_date or not end_date:
