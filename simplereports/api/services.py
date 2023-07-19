@@ -1,6 +1,7 @@
 import datetime
 import decimal
 import time
+from django.http import HttpResponse
 import requests
 from typing import Union
 import os
@@ -12,13 +13,14 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST
 import xlsxwriter
 
-from reports.models import AdPlan, Statistics
+from reports.models import AdPlan, Report, Statistics
 from api.serializers import AdPlanSerializer, StatisticsSerializer
 from simplereports.settings import REPORTS_ROOT
 from .vk_config import ADPLANS, GENERAL_URL, GETPLANSDAY
 
 
 def get_token(user) -> Union[Response, str]:
+    # TODO - добавить метод для получения токена из API VK
     """
     Получаем токен VK пользователя из базы данных.
 
@@ -143,9 +145,15 @@ def get_daily_data(campaigns, user, start_date=None) -> Union[Response, list]:
     if isinstance(token, Response):
         return token
 
+    if start_date and datetime.datetime.strptime(
+        start_date, "%Y-%m-%d"
+    ).date() < datetime.date(2022, 9, 1):
+        start_date = "2022-09-01"
+
     if not start_date:
         start_date = datetime.datetime.strftime(get_last_date(campaigns), "%Y-%m-%d")
 
+    print(start_date)
     daily_data_response = requests.get(
         f"{GENERAL_URL}{GETPLANSDAY}"
         f"?id={','.join(list(map(str, campaigns)))}"
@@ -173,6 +181,11 @@ def get_daily_data(campaigns, user, start_date=None) -> Union[Response, list]:
                         "spent": row.get("base").get("spent"),
                     }
                     for row in campaign_data.get("rows")
+                    if (
+                        row.get("base").get("shows")
+                        or row.get("base").get("clicks")
+                        or row.get("base").get("spent") != "0"
+                    )
                 }
             }
             for campaign_data in daily_data_response.json().get("items", [])
@@ -220,62 +233,94 @@ def add_statistics_to_db(statistics) -> Union[Response, dict]:
 
 
 def create_excel_report(user, statistics):
-    title = f"report_{user.first_name}_{user.last_name}_{int(time.time())}.xlsx".lower()
-    workbook = xlsxwriter.Workbook(os.path.join(REPORTS_ROOT, "reports", f"{title}"))
-    worksheet = workbook.add_worksheet()
-
-    bold = workbook.add_format({"bold": True})
-    date_format = workbook.add_format({"num_format": "dd.mm.yyyy"})
-    percentage_format = workbook.add_format({"num_format": "0.00%"})
-    money_format = workbook.add_format({"num_format": "0.00"})
-
-    worksheet.set_column("A:A", 20)
-    worksheet.set_column("B:B", 15)
-    worksheet.set_column("C:C", 12)
-    worksheet.set_column("D:F", 10)
-    worksheet.set_column("D:F", 10)
-    worksheet.set_column("D:F", 10)
-
-    worksheet.merge_range(
-        "A1:F1", f"Отчет для пользователя: {user.first_name} {user.last_name}", bold
+    title = (
+        f"report_{user.first_name}_{user.last_name}_{int(time.time())}.xlsx".lower()
     )
 
-    headers = [
-        "Кампания",
-        "ID кампании VK",
-        "Дата",
-        "Показы",
-        "Клики",
-        "Расход, руб.",
-        "CTR",
-        "CPM, руб.",
-    ]
-    for col, header in enumerate(headers):
-        worksheet.write(1, col, header, bold)
+    report = Report.objects.create(
+        title=title,
+        user=user,
+        status="process",
+        file_name=title,
+        date=timezone.now(),
+        url=os.path.join(REPORTS_ROOT, "reports", title),
+    )
+    try:
+        workbook = xlsxwriter.Workbook(os.path.join(REPORTS_ROOT, "reports", title))
+        worksheet = workbook.add_worksheet()
 
-    for row, statistic in enumerate(statistics, start=2):
-        worksheet.write(row, 0, statistic.ad_plan.name)
-        worksheet.write(row, 1, statistic.ad_plan.ad_plan_id)
-        worksheet.write_datetime(row, 2, statistic.date, date_format)
-        worksheet.write_number(row, 3, statistic.shows)
-        worksheet.write_number(row, 4, statistic.clicks)
-        worksheet.write_number(row, 5, decimal.Decimal(statistic.spent))
-        ctr = int(statistic.clicks) / int(statistic.shows) if statistic.shows else 0
-        cpm = (
-            decimal.Decimal(statistic.spent) / int(statistic.shows) * 1000
-            if statistic.shows
-            else 0
+        bold = workbook.add_format({"bold": True})
+        date_format = workbook.add_format({"num_format": "dd.mm.yyyy"})
+        percentage_format = workbook.add_format({"num_format": "0.00%"})
+        money_format = workbook.add_format({"num_format": "0.00"})
+
+        worksheet.set_column("A:A", 20)
+        worksheet.set_column("B:B", 15)
+        worksheet.set_column("C:C", 12)
+        worksheet.set_column("D:F", 10)
+        worksheet.set_column("D:F", 10)
+        worksheet.set_column("D:F", 10)
+
+        worksheet.merge_range(
+            "A1:I1",
+            f"Отчет для пользователя: {user.first_name} {user.last_name}",
+            bold,
         )
 
-        worksheet.write_number(row, 6, ctr, percentage_format)
-        worksheet.write_number(row, 7, cpm, money_format)
+        headers = [
+            "Кампания",
+            "ID кампании VK",
+            "Дата",
+            "Показы",
+            "Клики",
+            "Расход, руб.",
+            "CTR",
+            "CPM, руб.",
+            "CPC, руб.",
+        ]
+        for col, header in enumerate(headers):
+            worksheet.write(1, col, header, bold)
 
-    workbook.close()
+        for row, statistic in enumerate(statistics, start=2):
+            print(statistic)
+            worksheet.write(row, 0, statistic.ad_plan.name)
+            worksheet.write(row, 1, statistic.ad_plan.ad_plan_id)
+            worksheet.write_datetime(row, 2, statistic.date, date_format)
+            worksheet.write_number(row, 3, statistic.shows)
+            worksheet.write_number(row, 4, statistic.clicks)
+            worksheet.write_number(row, 5, decimal.Decimal(statistic.spent))
+            ctr = (
+                int(statistic.clicks) / int(statistic.shows)
+                if statistic.shows
+                else 0
+            )
+            cpm = (
+                decimal.Decimal(statistic.spent) / int(statistic.shows) * 1000
+                if statistic.shows
+                else 0
+            )
+            cpc = (
+                decimal.Decimal(statistic.spent) / int(statistic.clicks)
+                if statistic.clicks
+                else 0
+            )
+            worksheet.write_number(row, 6, ctr, percentage_format)
+            worksheet.write_number(row, 7, cpm, money_format)
+            worksheet.write_number(row, 8, cpc, money_format)
 
-    return Response({"message": "Отчет успешно создан"})
+        workbook.close()
+        report.status = "ready"
+        report.save()
+    except:
+        report.status = "error"
+        report.save()
+
+    return report
 
 
-def create_report(user, start_date, end_date, campaigns=None) -> Union[Response, list]:
+def create_report(
+    user, start_date, end_date, campaigns=None
+) -> Union[Response, list]:
     """
     Создаем отчет по статистике рекламных кампаний.
 
@@ -297,9 +342,15 @@ def create_report(user, start_date, end_date, campaigns=None) -> Union[Response,
 
     add_ad_plans_to_db(user, ad_plans)
 
-    campaigns = AdPlan.objects.filter(user=user, ad_plan_id__in=campaigns).values_list(
-        "ad_plan_id", flat=True
-    )
+    if campaigns:
+        campaigns = AdPlan.objects.filter(
+            user=user, ad_plan_id__in=campaigns
+        ).values_list("ad_plan_id", flat=True)
+
+    else:
+        campaigns = AdPlan.objects.filter(user=user).values_list(
+            "ad_plan_id", flat=True
+        )
 
     is_exists = True
     daily_data = []
@@ -311,16 +362,24 @@ def create_report(user, start_date, end_date, campaigns=None) -> Union[Response,
             is_exists = False
             break
     if not is_exists:
-        daily_data = get_daily_data(campaigns, user, min_date=start_date)
+        daily_data = get_daily_data(campaigns, user, start_date=start_date)
         if isinstance(daily_data, Response):
             return daily_data
 
         statistics = add_statistics_to_db(daily_data)
-
     statistics = Statistics.objects.filter(
         ad_plan__ad_plan_id__in=campaigns, date__range=(start_date, end_date)
     )
 
-    create_excel_report(user, statistics)
+    report = create_excel_report(user, statistics)
 
-    return Response(StatisticsSerializer(statistics, many=True).data)
+    if report.status == "ready":
+        with open(report.url, "rb") as file:
+            response = HttpResponse(file, content_type="text/xls")
+            response[
+                "Content-Disposition"
+            ] = f"attachment; filename={report.file_name}"
+        return response
+    return Response(
+        {"message": "Ошибка формирования отчета"}, status=HTTP_400_BAD_REQUEST
+    )

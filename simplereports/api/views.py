@@ -15,8 +15,13 @@ from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 
-from .serializers import ReportSerializer, UserReportsSerializer, StatisticsSerializer
-from .services import create_report, get_daily_data, get_ad_plans, add_statistics_to_db
+from .serializers import ReportSerializer, UserReportsSerializer
+from .services import (
+    create_report,
+    get_daily_data,
+    get_ad_plans,
+    add_statistics_to_db,
+)
 from .vk_config import (
     GENERAL_URL,
     GETPLANS,
@@ -67,7 +72,7 @@ def add_daily_data(request, start_date=None, *args, **kwargs):
     ad_plans_data = get_ad_plans(user)
 
     if request.body:
-        start_date = request.data.get("date")
+        start_date = request.data.get("start_date")
 
     if isinstance(ad_plans_data, Response):
         return Response(ad_plans_data.data, status=ad_plans_data.status_code)
@@ -100,6 +105,8 @@ def create_report_for_the_period(request):
         raise DataNotReceivedException()
     start_date = request.data.get("start_date")
     end_date = request.data.get("end_date")
+    if not start_date or not end_date:
+        raise DataNotReceivedException()
     campaigns = request.data.get("ad_plans", [])
     return create_report(request.user, start_date, end_date, campaigns)
 
