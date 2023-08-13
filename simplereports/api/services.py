@@ -6,11 +6,19 @@ import requests
 from typing import Union
 import os
 
+import logging
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+
 from django.db import transaction
 from django.db.models import Max
 from django.utils import timezone
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
 import xlsxwriter
 
 from reports.models import AdPlan, Report, Statistics
@@ -20,7 +28,6 @@ from .vk_config import ADPLANS, GENERAL_URL, GETPLANSDAY
 
 
 def get_token(user) -> Union[Response, str]:
-    # TODO - добавить метод для получения токена из API VK
     """
     Получаем токен VK пользователя из базы данных.
 
@@ -193,6 +200,16 @@ def get_daily_data(campaigns, user, start_date=None) -> Union[Response, list]:
     return statistics
 
 
+def check_statistics(statistics) -> Union[Response, dict]:
+    logging.info(f"первоначальная статистика: {statistics}")
+    result = []
+    for i in statistics:
+        if i and any(i.values()):
+            result.append(i)
+    logging.info(f"проверенная статистика: {result}")
+    return result
+
+
 def add_statistics_to_db(statistics) -> Union[Response, dict]:
     """
     Добавляем статистику в базу данных.
@@ -201,6 +218,12 @@ def add_statistics_to_db(statistics) -> Union[Response, dict]:
 
     :return: Сериализованные данные о ежедневной статистике или объект Response с ошибкой.
     """
+    statistics = check_statistics(statistics)
+    if not statistics:
+        return Response(
+            {"error": "Нет данных для добавления в базу данных за указаннй период"},
+            status=HTTP_400_BAD_REQUEST,
+        )
     with transaction.atomic():
         statistics_to_create = [
             Statistics(
@@ -227,14 +250,13 @@ def add_statistics_to_db(statistics) -> Union[Response, dict]:
             status=HTTP_400_BAD_REQUEST,
         )
 
-    serialized_data = StatisticsSerializer(statistics_to_create, many=True).data
-    return serialized_data
+    serialized_statistics = StatisticsSerializer(statistics, many=True).data
+    return Response(serialized_statistics, status=HTTP_200_OK)
 
 
 def create_excel_report(user, statistics):
-    title = (
-        f"report_{user.first_name}_{user.last_name}_{int(time.time())}.xlsx".lower()
-    )
+    # TODO: функция позволяет создать несолько отчетов за одну дату, нужно это проверить
+    title = f"report_{user.first_name}_{user.last_name}_{int(time.time())}.xlsx".lower()
 
     report = Report.objects.create(
         title=title,
@@ -288,11 +310,7 @@ def create_excel_report(user, statistics):
             worksheet.write_number(row, 3, statistic.shows)
             worksheet.write_number(row, 4, statistic.clicks)
             worksheet.write_number(row, 5, decimal.Decimal(statistic.spent))
-            ctr = (
-                int(statistic.clicks) / int(statistic.shows)
-                if statistic.shows
-                else 0
-            )
+            ctr = int(statistic.clicks) / int(statistic.shows) if statistic.shows else 0
             cpm = (
                 decimal.Decimal(statistic.spent) / int(statistic.shows) * 1000
                 if statistic.shows
@@ -317,9 +335,7 @@ def create_excel_report(user, statistics):
     return report
 
 
-def create_report(
-    user, start_date, end_date, campaigns=None
-) -> Union[Response, list]:
+def create_report(user, start_date, end_date, campaigns=None) -> Union[Response, list]:
     """
     Создаем отчет по статистике рекламных кампаний.
 
@@ -362,10 +378,11 @@ def create_report(
             break
     if not is_exists:
         daily_data = get_daily_data(campaigns, user, start_date=start_date)
-        if isinstance(daily_data, Response):
-            return daily_data
 
-        statistics = add_statistics_to_db(daily_data)
+    if isinstance(daily_data, Response):
+        return daily_data
+
+    statistics = add_statistics_to_db(daily_data)
     statistics = Statistics.objects.filter(
         ad_plan__ad_plan_id__in=campaigns, date__range=(start_date, end_date)
     )
@@ -375,9 +392,7 @@ def create_report(
     if report.status == "ready":
         with open(report.url, "rb") as file:
             response = HttpResponse(file, content_type="text/xls")
-            response[
-                "Content-Disposition"
-            ] = f"attachment; filename={report.file_name}"
+            response["Content-Disposition"] = f"attachment; filename={report.file_name}"
         return response
     return Response(
         {"error": "Ошибка формирования отчета"}, status=HTTP_400_BAD_REQUEST

@@ -6,6 +6,7 @@ from .views import (
     download_report,
     add_daily_data,
     get_report,
+    get_reports,
     create_report_for_the_period,
 )
 
@@ -24,5 +25,10 @@ urlpatterns = [
         "v1/create_report/",
         create_report_for_the_period,
         name="create_report_for_the_period",
+    ),
+    path(
+        "v1/get_all_reports",
+        get_reports,
+        name="get_all_reports",
     ),
 ]
