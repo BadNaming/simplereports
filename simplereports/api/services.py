@@ -18,11 +18,15 @@ from django.db import transaction
 from django.db.models import Max
 from django.utils import timezone
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK, HTTP_201_CREATED
 import xlsxwriter
 
 from reports.models import AdPlan, Report, Statistics
-from api.serializers import AdPlanSerializer, StatisticsSerializer
+from api.serializers import (
+    AdPlanSerializer,
+    StatisticsSerializer,
+    UserReportsSerializer,
+)
 from simplereports.settings import REPORTS_ROOT
 from .vk_config import ADPLANS, GENERAL_URL, GETPLANSDAY
 
@@ -160,6 +164,11 @@ def get_daily_data(campaigns, user, start_date=None) -> Union[Response, list]:
     if not start_date:
         start_date = datetime.datetime.strftime(get_last_date(campaigns), "%Y-%m-%d")
 
+    logger.info(
+        f"{GENERAL_URL}{GETPLANSDAY}"
+        f"?id={','.join(list(map(str, campaigns)))}"
+        f"&date_from={start_date}",
+    )
     daily_data_response = requests.get(
         f"{GENERAL_URL}{GETPLANSDAY}"
         f"?id={','.join(list(map(str, campaigns)))}"
@@ -201,12 +210,10 @@ def get_daily_data(campaigns, user, start_date=None) -> Union[Response, list]:
 
 
 def check_statistics(statistics) -> Union[Response, dict]:
-    logging.info(f"первоначальная статистика: {statistics}")
     result = []
     for i in statistics:
         if i and any(i.values()):
             result.append(i)
-    logging.info(f"проверенная статистика: {result}")
     return result
 
 
@@ -251,12 +258,13 @@ def add_statistics_to_db(statistics) -> Union[Response, dict]:
         )
 
     serialized_statistics = StatisticsSerializer(statistics, many=True).data
-    return Response(serialized_statistics, status=HTTP_200_OK)
+    return Response(serialized_statistics, status=HTTP_201_CREATED)
 
 
 def create_excel_report(user, statistics):
     # TODO: функция позволяет создать несолько отчетов за одну дату, нужно это проверить
     title = f"report_{user.first_name}_{user.last_name}_{int(time.time())}.xlsx".lower()
+    logging.info(f"создаем отчет: {title}")
 
     report = Report.objects.create(
         title=title,
@@ -344,8 +352,8 @@ def create_report(user, start_date, end_date, campaigns=None) -> Union[Response,
     :param end_date: Конечная дата для отчета в формате YYYY-MM-DD.
     :param ad_plans: Список рекламных кампаний (необязательный)
 
-    :return: При успешном запросе - список, содержащий данные о
-    статистике, иначе объект Response с ошибкой.
+    :return: возвращает сериализованные данные из модели Report,
+    касающиеся отчета, либо ошибку в случае некорректных данных.
     """
     start_date_datetime = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
     end_date_datetime = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
@@ -390,10 +398,9 @@ def create_report(user, start_date, end_date, campaigns=None) -> Union[Response,
     report = create_excel_report(user, statistics)
 
     if report.status == "ready":
-        with open(report.url, "rb") as file:
-            response = HttpResponse(file, content_type="text/xls")
-            response["Content-Disposition"] = f"attachment; filename={report.file_name}"
-        return response
+        serializer = UserReportsSerializer(report)
+        logging.info(f"отчет создан: {serializer.data}")
+        return Response(serializer.data, status=HTTP_201_CREATED)
     return Response(
         {"error": "Ошибка формирования отчета"}, status=HTTP_400_BAD_REQUEST
     )

@@ -1,8 +1,3 @@
-import io
-import requests
-import zipfile
-
-
 import logging
 
 logger = logging.getLogger(__name__)
@@ -18,27 +13,34 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
 from rest_framework.decorators import api_view, parser_classes, permission_classes
 from rest_framework.parsers import JSONParser
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.status import HTTP_200_OK
 
 from exceptions import (
     DataNotReceivedException,
-    InvalidDataException,
-    ResponseNotRecievedException,
-    ReportsNotFoundException,
 )
-from reports.models import AdPlan, Report
-from .serializers import ReportSerializer, UserReportsSerializer
+from reports.models import AdPlan, Report, Statistics
+from .serializers import StatisticsSerializer, UserReportsSerializer
 from .services import (
     add_statistics_to_db,
     create_report,
     get_ad_plans,
     get_daily_data,
 )
-from .vk_config import GENERAL_URL, GETPLANS, METRICS_VK, REQUEST_HEADERS
 
 User = get_user_model()
+
+
+@api_view(["DELETE"])
+# TODO УДАЛИТЬ ЭТОТ СЛАВНЫЙ ЭНДПОЙНТ!!!
+def clear_database(request):
+    """
+    Очищает базу данных от всех записей.
+    """
+    AdPlan.objects.all().delete()
+    Report.objects.all().delete()
+    User.objects.filter(email="johndoe@email.com").delete()
+    return Response(status=204)
 
 
 @swagger_auto_schema(
@@ -188,8 +190,16 @@ def add_daily_data(request, start_date=None, *args, **kwargs):
         200: openapi.Response(
             "Успешное выполнение запроса",
             schema=openapi.Schema(
-                type=openapi.TYPE_FILE,
-                description="Excel-файл с отчетом",
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                    "title": openapi.Schema(type=openapi.TYPE_STRING),
+                    "status": openapi.Schema(type=openapi.TYPE_STRING),
+                    "user": openapi.Schema(type=openapi.TYPE_INTEGER),
+                    "date": openapi.Schema(type=openapi.TYPE_STRING, format="date"),
+                    "file_name": openapi.Schema(type=openapi.TYPE_STRING),
+                    "url": openapi.Schema(type=openapi.TYPE_STRING),
+                },
             ),
         ),
         "4xx": openapi.Response(
@@ -214,7 +224,8 @@ def add_daily_data(request, start_date=None, *args, **kwargs):
 def create_report_for_the_period(request):
     """
     Формирует отчет по кампаниям учетной записи
-    за указанный период времени и возвращает его в виде файла.
+    за указанный период времени и возвращает сериализованные данные из модели Report,
+    касающиеся этого отчета. Возвращает ошибку в случае некорректных данных.
 
     Parameters:
     - start_date - дата начала периода, за который запрашивается статистика (обязательный).
@@ -234,28 +245,12 @@ def create_report_for_the_period(request):
 
 @swagger_auto_schema(
     method="GET",
-    manual_parameters=[
-        openapi.Parameter(
-            "Authorization",
-            openapi.IN_HEADER,
-            description="Bearer токен",
-            type=openapi.TYPE_STRING,
-            required=True,
-        )
-    ],
     responses={
         200: openapi.Response(
             "Успешное выполнение запроса",
             schema=openapi.Schema(
                 type=openapi.TYPE_FILE,
-                description="Zip-архив с отчетами",
-            ),
-        ),
-        404: openapi.Response(
-            "Отчеты не найдены",
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={"detail": openapi.Schema(type=openapi.TYPE_STRING)},
+                description="Excel-файл с отчетом",
             ),
         ),
         "4xx": openapi.Response(
@@ -273,67 +268,8 @@ def create_report_for_the_period(request):
             ),
         ),
     },
-    description="Получение отчетов по учетной записи",
 )
-@api_view(["GET"])
-@permission_classes([AllowAny])
-def get_reports(request):
-    """
-    Получаем все отчеты по учетной записи, после чего отправляем их в виде zip-архива.
-
-    Authorization:
-    - Bearer <токен>
-
-    """
-    reports = Report.objects.all()
-
-    if not reports:
-        raise ReportsNotFoundException()
-
-    buffer = io.BytesIO()
-
-    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
-        for report in reports:
-            with open(report.url, "rb") as file:
-                zipf.writestr(report.file_name, file.read())
-
-    response = HttpResponse(buffer.getvalue(), content_type="application/zip")
-    response["Content-Disposition"] = 'attachment; filename="reports.zip"'
-
-    return response
-
-
-@api_view(["GET"])
-def get_report(request):
-    """
-    Получаем статистику по всем кампаниям
-    учетной записи по адресу ads.vk.com/api/v2/statistics/ad_plans/summary.json
-    сериализуем и выдаем ее на эндпоинт v1/report/
-    """
-    url = GENERAL_URL + GETPLANS
-    data = {"campaigns": []}
-    if requests.get(url, headers=REQUEST_HEADERS).status_code != HTTP_200_OK:
-        raise ResponseNotRecievedException()
-
-    plans = requests.get(url, headers=REQUEST_HEADERS).json()
-    for campaign in plans.get("items"):
-        obj = dict()
-        obj["campaign"] = campaign.get("id")
-        metrics = campaign.get("total").get("base")
-        for metric in METRICS_VK:
-            obj[metric] = metrics.get(metric)
-        data["campaigns"].append(obj)
-
-    serializer = ReportSerializer(data=data)
-
-    if not serializer.is_valid():
-        if serializer.errors:
-            raise InvalidDataException(serializer.errors)
-        raise DataNotReceivedException()
-
-    return Response(serializer.data, status=HTTP_200_OK)
-
-
+@permission_classes([IsAuthenticated])
 @api_view(["GET"])
 def download_report(request, *args, **kwargs):
     """
@@ -341,9 +277,9 @@ def download_report(request, *args, **kwargs):
     """
     report_id = kwargs.get("pk")
     report = Report.objects.filter(id=report_id).get()
-    with open(report.url / report.file_name, "rb") as file:
+    with open(report.url, "rb") as file:
         response = HttpResponse(file, content_type="text/xls")
-    response["Content-Disposition"] = f"attachment; filename={report.file_name}"
+        response["Content-Disposition"] = f"attachment; filename={report.file_name}"
     return response
 
 
@@ -359,3 +295,11 @@ class ReportViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         return Report.objects.filter(user=self.request.user)
+
+
+class StatisticsViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = StatisticsSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Statistics.objects.filter(ad_plan__user=self.request.user)

@@ -30,7 +30,7 @@ class User(AbstractUser):
         "Номер телефона", max_length=16, validators=[validate_phone_number]
     )
     vk_client_id = models.CharField("Client ID ВК", max_length=200, null=True)
-    vk_client_secret = models.CharField("Client secret ВК", max_length=200, null=True)
+    vk_client_secret = models.CharField("Client secret ВК", max_length=1000, null=True)
     vk_client_token = models.CharField(
         "Токен доступа к API ВК", max_length=255, null=True
     )
