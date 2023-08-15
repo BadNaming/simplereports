@@ -16,17 +16,23 @@ class AdPlan(models.Model):
     - name: название рекламной кампании
     - user: владелец рекламной кампании
     """
+
     ad_plan_id = models.CharField(
-        max_length=10,
-        verbose_name='id рекламной кампании во ВКонтакте')
-    name = models.CharField(
-        max_length=300,
-        verbose_name='Название рекламной кампании')
+        max_length=10, verbose_name="id рекламной кампании во ВКонтакте"
+    )
+    name = models.CharField(max_length=300, verbose_name="Название рекламной кампании")
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='ad_plans',
-        verbose_name='Владелец рекламных кампаний')
+        related_name="ad_plans",
+        verbose_name="Владелец рекламных кампаний",
+    )
+
+    def __str__(self):
+        return f"{str(self.name)} (ID {str(self.ad_plan_id)}) - {str(self.user)}"
+
+    class Meta:
+        unique_together = ("ad_plan_id", "user")
 
 
 class Statistics(models.Model):
@@ -41,15 +47,23 @@ class Statistics(models.Model):
     - goals: целевые показатели
     - spent: расходы
     """
+
     ad_plan = models.ForeignKey(
         AdPlan,
         on_delete=models.CASCADE,
-        related_name='statistics',
-        verbose_name='Статистика за сутки')
-    date = models.DateField(verbose_name='Дата')
-    shows = models.IntegerField(verbose_name='Показы')
-    clicks = models.IntegerField(verbose_name='Клики')
-    spent = models.CharField(verbose_name='Расходы')
+        related_name="statistics",
+        verbose_name="Статистика за сутки",
+    )
+    date = models.DateField(verbose_name="Дата")
+    shows = models.IntegerField(verbose_name="Показы")
+    clicks = models.IntegerField(verbose_name="Клики")
+    spent = models.CharField(verbose_name="Расходы", max_length=50)
+
+    def __str__(self):
+        return str(self.ad_plan) + " " + str(self.date)
+
+    class Meta:
+        unique_together = ("ad_plan", "date")
 
 
 class Report(models.Model):
@@ -57,28 +71,24 @@ class Report(models.Model):
     Модель отчета. Используется для сохранения готового отчета
     в базе и последующего скачивания в XLS в личном кабинете.
     """
+
     REPORT_STATUS_CHOICES = [
-        ('process', 'В процессе формирования'),
-        ('ready', 'Сформирован'),
-        ('error', 'Ошибка формирования')]
-    title = models.CharField(
-        max_length=100,
-        verbose_name='Заголовок отчета')
+        ("process", "В процессе формирования"),
+        ("ready", "Сформирован"),
+        ("error", "Ошибка формирования"),
+    ]
+    title = models.CharField(max_length=100, verbose_name="Заголовок отчета")
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='reports',
-        verbose_name='Автор отчета')
+        related_name="reports",
+        verbose_name="Автор отчета",
+    )
     status = models.CharField(
-        max_length=100,
-        choices=REPORT_STATUS_CHOICES,
-        default='process')
+        max_length=100, choices=REPORT_STATUS_CHOICES, default="process"
+    )
     date = models.DateTimeField(
-        verbose_name='Дата формирования отчета',
-        auto_now_add=True)
-    file_name = models.CharField(
-        max_length=100,
-        verbose_name='Название файла')
-    url = models.FilePathField(
-        path=settings.REPORTS_ROOT,
-        allow_files=True)
+        verbose_name="Дата формирования отчета", auto_now_add=True
+    )
+    file_name = models.CharField(max_length=100, verbose_name="Название файла")
+    url = models.FilePathField(path=settings.REPORTS_ROOT, allow_files=True)

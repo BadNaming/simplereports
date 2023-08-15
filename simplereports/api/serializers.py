@@ -1,33 +1,13 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from reports.models import Cabinet, Report, ReportTask
+from reports.models import Report, Statistics
 
 from .validators import validate_metrics
 
 User = get_user_model()
 
-
-class ReportTaskSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для постановки задачи на отчет
-    """
-
-    cabinets = serializers.ListField()
-    campaigns = serializers.ListField()
-    metrics = serializers.ListField(validators=[validate_metrics, ])
-
-    class Meta:
-        model = ReportTask
-        fields = ('cabinets', 'campaigns', 'metrics')
-
-
-class CabinetSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField()
-
-    class Meta:
-        model = Cabinet
-        fields = ('id', 'ext_id', 'ext_name')
+from rest_framework import serializers
 
 
 # class ReportInfoSerializer(serializers.Serializer):
@@ -38,12 +18,19 @@ class CabinetSerializer(serializers.ModelSerializer):
 #     cabinets = CabinetSerializer(many=True)
 #     campaigns = CampaignSerializer(many=True)
 #     metrics = serializers.ListField()
+class AdPlanSerializer(serializers.Serializer):
+    """
+    Сериализатор для получения списка рекламных кампаний
+    """
+
+    ad_plan_id = serializers.IntegerField()
 
 
 class CampaignSerializer(serializers.Serializer):
     """
     Сериализатор для метрик
     """
+
     campaign = serializers.IntegerField()
     shows = serializers.IntegerField()
     cpm = serializers.FloatField()
@@ -60,6 +47,7 @@ class ReportSerializer(serializers.Serializer):
     """
     Сериализатор для выдачи отчета на сайте
     """
+
     campaigns = CampaignSerializer(many=True)
 
 
@@ -70,19 +58,35 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'email',
-                  'first_name', 'last_name',
-                  'phone_number', 'vk_client_id',
-                  'vk_client_secret', 'vk_client_token')
+        fields = (
+            "id",
+            "email",
+            "first_name",
+            "last_name",
+            "phone_number",
+            "vk_client_id",
+            "vk_client_secret",
+            "vk_client_token",
+        )
 
 
 class UserReportsSerializer(serializers.ModelSerializer):
     """
     Сериализатор для работы с моделью Report.
     """
+
     class Meta:
         model = Report
-        fields = ('id', 'title',
-                  'status',
-                  'user', 'date',
-                  'file_name', 'url')
+        fields = ("id", "title", "status", "user", "date", "file_name", "url")
+
+
+class StatisticsSerializer(serializers.ModelSerializer):
+    ad_plan_id = serializers.IntegerField(source="ad_plan.ad_plan_id")
+
+    class Meta:
+        model = Statistics
+        fields = ("ad_plan_id", "date", "shows", "clicks", "spent")
+
+
+class DailySerializer(serializers.Serializer):
+    daily_statistics = StatisticsSerializer(many=True)
