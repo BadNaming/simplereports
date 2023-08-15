@@ -205,6 +205,7 @@ wheel==0.41.1
 xlsxwriter==3.1.2
     # via -r requirements.in
 gunicorn==20.0.4
+psycopg2-binary==2.8.6
 
 # The following packages are considered to be unsafe in a requirements file:
 # pip
