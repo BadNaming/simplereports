@@ -1,20 +1,16 @@
 import logging
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
+import datetime
 
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import viewsets
+from rest_framework import filters, viewsets
 from rest_framework.decorators import api_view, parser_classes, permission_classes
 from rest_framework.parsers import JSONParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
 
 from exceptions import (
     DataNotReceivedException,
@@ -29,6 +25,11 @@ from .services import (
 )
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 
 
 @api_view(["DELETE"])
@@ -117,6 +118,7 @@ def add_daily_data(request, start_date=None, *args, **kwargs):
     Returns:
     - Возврат ответа со списком обновленных статистик и статусом 200.
     """
+    logger.info("Запрос на получение ежедневной статистики", request)
     user = request.user
 
     ad_plans_data = get_ad_plans(user)
@@ -183,6 +185,14 @@ def add_daily_data(request, start_date=None, *args, **kwargs):
                     example=[808686, 676865],
                 ),
             ),
+            "metrics": openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Список запрашиваемых метрик",
+                    example=["shows", "clicks", "spent"],
+                ),
+            ),
         },
         required=["start_date", "end_date"],
     ),
@@ -232,15 +242,17 @@ def create_report_for_the_period(request):
     - end_date - дата окончания периода, за который запрашивается статистика (обязательный).
     - ad_plans - список идентификаторов рекламных кампаний,
     по которым запрашивается статистика (необязательный).
+    - metrics - список запрашиваемых метрик (необязательный).
     """
 
     start_date = request.data.get("start_date")
     end_date = request.data.get("end_date")
+    metrics = request.data.get("metrics", None)
     if not start_date or not end_date:
         raise DataNotReceivedException()
     campaigns = request.data.get("ad_plans", "")
 
-    return create_report(request.user, start_date, end_date, campaigns)
+    return create_report(request.user, start_date, end_date, campaigns, metrics)
 
 
 @swagger_auto_schema(
@@ -292,9 +304,21 @@ class ReportViewSet(viewsets.ReadOnlyModelViewSet):
 
     serializer_class = UserReportsSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ["date"]
 
     def get_queryset(self):
-        return Report.objects.filter(user=self.request.user)
+        queryset = Report.objects.filter(user=self.request.user)
+
+        start_date = self.request.query_params.get("start_date")
+        end_date = self.request.query_params.get("end_date")
+
+        if start_date and end_date:
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
+            queryset = queryset.filter(date__gte=start_date, date__lte=end_date)
+
+        return queryset
 
 
 class StatisticsViewSet(viewsets.ReadOnlyModelViewSet):

@@ -5,6 +5,7 @@ from django.http import HttpResponse
 import requests
 from typing import Union
 import os
+from string import ascii_uppercase
 
 import logging
 
@@ -18,7 +19,11 @@ from django.db import transaction
 from django.db.models import Max
 from django.utils import timezone
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK, HTTP_201_CREATED
+from rest_framework.status import (
+    HTTP_400_BAD_REQUEST,
+    HTTP_200_OK,
+    HTTP_201_CREATED,
+)
 import xlsxwriter
 
 from reports.models import AdPlan, Report, Statistics
@@ -82,6 +87,7 @@ def get_ad_plans(user) -> Union[Response, dict]:
     рекламных кампаниях, иначе объект Response с ошибкой.
     """
     token = get_token(user)
+    logger.info(f"получаем список кампаний пользователя: {user}")
 
     if isinstance(token, Response):
         return token
@@ -261,89 +267,9 @@ def add_statistics_to_db(statistics) -> Union[Response, dict]:
     return Response(serialized_statistics, status=HTTP_201_CREATED)
 
 
-def create_excel_report(user, statistics):
-    # TODO: функция позволяет создать несолько отчетов за одну дату, нужно это проверить
-    title = f"report_{user.first_name}_{user.last_name}_{int(time.time())}.xlsx".lower()
-    logging.info(f"создаем отчет: {title}")
-
-    report = Report.objects.create(
-        title=title,
-        user=user,
-        status="process",
-        file_name=title,
-        date=timezone.now(),
-        url=os.path.join(REPORTS_ROOT, "reports", title),
-    )
-    try:
-        workbook = xlsxwriter.Workbook(os.path.join(REPORTS_ROOT, "reports", title))
-        worksheet = workbook.add_worksheet()
-
-        bold = workbook.add_format({"bold": True})
-        date_format = workbook.add_format({"num_format": "dd.mm.yyyy"})
-        percentage_format = workbook.add_format({"num_format": "0.00%"})
-        money_format = workbook.add_format({"num_format": "0.00"})
-
-        worksheet.set_column("A:A", 20)
-        worksheet.set_column("B:B", 15)
-        worksheet.set_column("C:C", 12)
-        worksheet.set_column("D:F", 10)
-        worksheet.set_column("D:F", 10)
-        worksheet.set_column("D:F", 10)
-
-        worksheet.merge_range(
-            "A1:I1",
-            f"Отчет для пользователя: {user.first_name} {user.last_name}",
-            bold,
-        )
-
-        headers = [
-            "Кампания",
-            "ID кампании VK",
-            "Дата",
-            "Показы",
-            "Клики",
-            "Расход, руб.",
-            "CTR",
-            "CPM, руб.",
-            "CPC, руб.",
-        ]
-        for col, header in enumerate(headers):
-            worksheet.write(1, col, header, bold)
-
-        for row, statistic in enumerate(statistics, start=2):
-            print(statistic)
-            worksheet.write(row, 0, statistic.ad_plan.name)
-            worksheet.write(row, 1, statistic.ad_plan.ad_plan_id)
-            worksheet.write_datetime(row, 2, statistic.date, date_format)
-            worksheet.write_number(row, 3, statistic.shows)
-            worksheet.write_number(row, 4, statistic.clicks)
-            worksheet.write_number(row, 5, decimal.Decimal(statistic.spent))
-            ctr = int(statistic.clicks) / int(statistic.shows) if statistic.shows else 0
-            cpm = (
-                decimal.Decimal(statistic.spent) / int(statistic.shows) * 1000
-                if statistic.shows
-                else 0
-            )
-            cpc = (
-                decimal.Decimal(statistic.spent) / int(statistic.clicks)
-                if statistic.clicks
-                else 0
-            )
-            worksheet.write_number(row, 6, ctr, percentage_format)
-            worksheet.write_number(row, 7, cpm, money_format)
-            worksheet.write_number(row, 8, cpc, money_format)
-
-        workbook.close()
-        report.status = "ready"
-        report.save()
-    except:
-        report.status = "error"
-        report.save()
-
-    return report
-
-
-def create_report(user, start_date, end_date, campaigns=None) -> Union[Response, list]:
+def create_report(
+    user, start_date, end_date, campaigns=None, metrics=None
+) -> Union[Response, list]:
     """
     Создаем отчет по статистике рекламных кампаний.
 
@@ -392,15 +318,137 @@ def create_report(user, start_date, end_date, campaigns=None) -> Union[Response,
 
     statistics = add_statistics_to_db(daily_data)
     statistics = Statistics.objects.filter(
-        ad_plan__ad_plan_id__in=campaigns, date__range=(start_date, end_date)
+        ad_plan__ad_plan_id__in=campaigns,
+        date__range=(start_date, end_date),
     )
 
-    report = create_excel_report(user, statistics)
+    report = create_excel_report(user, statistics, metrics)
 
     if report.status == "ready":
         serializer = UserReportsSerializer(report)
         logging.info(f"отчет создан: {serializer.data}")
         return Response(serializer.data, status=HTTP_201_CREATED)
     return Response(
-        {"error": "Ошибка формирования отчета"}, status=HTTP_400_BAD_REQUEST
+        {"error": "Ошибка формирования отчета"},
+        status=HTTP_400_BAD_REQUEST,
     )
+
+
+def calculate_metrics(statistic, metric):
+    if metric == "shows":
+        return statistic.shows
+    elif metric == "clicks":
+        return statistic.clicks
+    elif metric == "spend":
+        return decimal.Decimal(statistic.spent)
+    elif metric == "ctr":
+        return int(statistic.clicks) / int(statistic.shows) if statistic.shows else 0
+    elif metric == "cpm":
+        return (
+            decimal.Decimal(statistic.spent) / int(statistic.shows) * 1000
+            if statistic.shows
+            else 0
+        )
+    elif metric == "cpc":
+        return (
+            decimal.Decimal(statistic.spent) / int(statistic.clicks)
+            if statistic.clicks
+            else 0
+        )
+
+
+def create_excel_report(user, statistics, metrics=None):
+    title = f"report_{user.first_name}_{user.last_name}_{int(time.time())}.xlsx".lower()
+    logging.info(f"создаем отчет: {title}")
+
+    report = Report.objects.create(
+        title=title,
+        user=user,
+        status="process",
+        file_name=title,
+        date=timezone.now(),
+        url=os.path.join(REPORTS_ROOT, "reports", title),
+    )
+
+    possible_metrics = {
+        "shows": "Показы",
+        "clicks": "Клики",
+        "spend": "Расход, руб.",
+        "ctr": "CTR",
+        "cpm": "CPM, руб.",
+        "cpc": "CPC, руб.",
+    }
+
+    try:
+        # Считаем порядковую номер буквы в английском алфвите, которая будет соответствовать последнему столбцу в отчете.
+        calc_last_row = (
+            len(metrics) + 2 if metrics else len(possible_metrics.keys()) + 2
+        )
+        workbook = xlsxwriter.Workbook(os.path.join(REPORTS_ROOT, "reports", title))
+        worksheet = workbook.add_worksheet()
+
+        bold = workbook.add_format({"bold": True})
+        date_format = workbook.add_format({"num_format": "dd.mm.yyyy"})
+        percentage_format = workbook.add_format({"num_format": "0.00%"})
+        money_format = workbook.add_format({"num_format": "0.00"})
+
+        worksheet.set_column("A:A", 20)
+        worksheet.set_column("B:B", 20)
+        worksheet.set_column("C:C", 15)
+        # Динамически устанавливаем ширину столбцов в зависимости от количества метрик.
+        worksheet.set_column(f"D:{ascii_uppercase[calc_last_row]}", 15)
+
+        worksheet.merge_range(
+            f"A1:{ascii_uppercase[calc_last_row]}1",
+            f"Отчет для пользователя: {user.first_name} {user.last_name}",
+            bold,
+        )
+
+        # Список столбцов, которые будут в отчете по умолчанию.
+        default_headers = [
+            "Кампания",
+            "ID кампании VK",
+            "Дата",
+        ]
+
+        additional_headers = {}
+        # Если в запросе были переданы метрики, то добавляем их в список столбцов. Если метрик в запросе нет, то добавляем все возможные метрики.
+        if metrics:
+            for i in metrics:
+                additional_headers[i] = possible_metrics[i]
+        else:
+            additional_headers = possible_metrics
+
+        result_headers = default_headers + list(additional_headers.values())
+
+        # Формируем заголовки для отчета.
+        for col, header in enumerate(result_headers, start=0):
+            worksheet.write(1, col, header, bold)
+
+        # Формируем данные для отчета.
+        for row, statistic in enumerate(statistics, start=2):
+            worksheet.write(row, 0, statistic.ad_plan.name)
+            worksheet.write(row, 1, statistic.ad_plan.ad_plan_id)
+            worksheet.write_datetime(row, 2, statistic.date, date_format)
+            # Добавляем данные по метрикам.
+            for i in range(len(additional_headers.keys())):
+                metric_name = list(additional_headers.keys())[i]
+                metric_value = calculate_metrics(statistic, metric_name)
+                worksheet.write_number(
+                    row,
+                    i + 3,
+                    metric_value,
+                    percentage_format
+                    if metric_name == "ctr"
+                    else money_format
+                    if metric_name in ["cpm", "cpc"]
+                    else None,
+                )
+        workbook.close()
+        report.status = "ready"
+        report.save()
+    except:
+        report.status = "error"
+        report.save()
+
+    return report

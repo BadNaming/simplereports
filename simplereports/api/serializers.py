@@ -82,11 +82,8 @@ class UserReportsSerializer(serializers.ModelSerializer):
 
 class StatisticsSerializer(serializers.ModelSerializer):
     ad_plan_id = serializers.IntegerField(source="ad_plan.ad_plan_id")
+    ad_plan_name = serializers.CharField(source="ad_plan.name")
 
     class Meta:
         model = Statistics
-        fields = ("ad_plan_id", "date", "shows", "clicks", "spent")
-
-
-class DailySerializer(serializers.Serializer):
-    daily_statistics = StatisticsSerializer(many=True)
+        fields = ("ad_plan_id", "ad_plan_name", "date", "shows", "clicks", "spent")

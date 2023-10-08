@@ -15,9 +15,9 @@ class AdPlanAdmin(admin.ModelAdmin):
         total_shows = obj.statistics.aggregate(total_shows=models.Sum("shows")).get(
             "total_shows"
         )
-        total_clicks = obj.statistics.aggregate(
-            total_clicks=models.Sum("clicks")
-        ).get("total_clicks")
+        total_clicks = obj.statistics.aggregate(total_clicks=models.Sum("clicks")).get(
+            "total_clicks"
+        )
         total_spent = obj.statistics.aggregate(total_spent=models.Sum("spent")).get(
             "total_spent"
         )
@@ -31,6 +31,10 @@ class AdPlanAdmin(admin.ModelAdmin):
     get_total_statistics.short_description = "Total Statistics"
 
 
+class ReportsAdmin(admin.ModelAdmin):
+    list_display = ("id", "user", "date", "file_name", "title", "status")
+
+
 admin.site.register(Statistics, StatisticsAdmin)
 admin.site.register(AdPlan, AdPlanAdmin)
-admin.site.register(Report)
+admin.site.register(Report, ReportsAdmin)
