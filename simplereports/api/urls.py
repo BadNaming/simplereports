@@ -7,7 +7,6 @@ from .views import (
     download_report,
     add_daily_data,
     create_report_for_the_period,
-    clear_database,
 )
 
 router_v1 = DefaultRouter()
