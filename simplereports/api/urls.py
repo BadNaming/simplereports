@@ -26,5 +26,4 @@ urlpatterns = [
         create_report_for_the_period,
         name="create_report_for_the_period",
     ),
-    path("v1/delete_all/", clear_database, name="clear_database"),
 ]
