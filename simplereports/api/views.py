@@ -32,18 +32,6 @@ logging.basicConfig(
 )
 
 
-@api_view(["DELETE"])
-# TODO УДАЛИТЬ ЭТОТ СЛАВНЫЙ ЭНДПОЙНТ!!!
-def clear_database(request):
-    """
-    Очищает базу данных от всех записей.
-    """
-    AdPlan.objects.all().delete()
-    Report.objects.all().delete()
-    User.objects.filter(email="johndoe@email.com").delete()
-    return Response(status=204)
-
-
 @swagger_auto_schema(
     method="POST",
     manual_parameters=[

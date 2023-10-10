@@ -7,7 +7,6 @@ from .views import (
     download_report,
     add_daily_data,
     create_report_for_the_period,
-    clear_database,
 )
 
 router_v1 = DefaultRouter()
@@ -26,5 +25,4 @@ urlpatterns = [
         create_report_for_the_period,
         name="create_report_for_the_period",
     ),
-    path("v1/delete_all/", clear_database, name="clear_database"),
 ]
