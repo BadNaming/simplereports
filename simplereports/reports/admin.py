@@ -24,7 +24,7 @@ class AdPlanAdmin(admin.ModelAdmin):
 
         total_clicks = total_clicks if total_clicks else 0
         total_shows = total_shows if total_shows else 0
-        total_spent = total_spent.__round__(2) if total_spent else 0
+        total_spent = float(total_spent).__round__(2) if total_spent else 0
 
         return f"Shows: {total_shows}, Clicks: {total_clicks}, Spent: {total_spent}"
 
