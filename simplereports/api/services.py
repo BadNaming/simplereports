@@ -447,8 +447,8 @@ def create_excel_report(user, statistics, metrics=None):
         workbook.close()
         report.status = "ready"
         report.save()
-    except:
+    except Exception as e:
+        logging.error(e)
         report.status = "error"
         report.save()
-
     return report
