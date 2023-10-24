@@ -191,7 +191,7 @@ def get_daily_data(campaigns, user, start_date=None) -> Union[Response, list]:
             },
             status=daily_data_response.status_code,
         )
-
+    logging.info(daily_data_response.json().get("items", []))
     statistics = list(
         (
             {
@@ -199,13 +199,13 @@ def get_daily_data(campaigns, user, start_date=None) -> Union[Response, list]:
                     row.get("date"): {
                         "shows": row.get("base").get("shows"),
                         "clicks": row.get("base").get("clicks"),
-                        "spent": row.get("base").get("spent"),
+                        "spent": float(row.get("base").get("spent")),
                     }
                     for row in campaign_data.get("rows")
                     if (
                         row.get("base").get("shows")
                         or row.get("base").get("clicks")
-                        or row.get("base").get("spent") != "0"
+                        or float(row.get("base").get("spent"))
                     )
                 }
             }
@@ -322,7 +322,9 @@ def create_report(
         date__range=(start_date, end_date),
     )
 
-    report = create_excel_report(user, statistics, metrics)
+    report = create_excel_report(
+        user, statistics, metrics, start_date, end_date, campaigns
+    )
 
     if report.status == "ready":
         serializer = UserReportsSerializer(report)
@@ -357,9 +359,15 @@ def calculate_metrics(statistic, metric):
         )
 
 
-def create_excel_report(user, statistics, metrics=None):
+def create_excel_report(
+    user, statistics, metrics=None, start_date=None, end_date=None, campaigns=None
+):
     title = f"report_{user.first_name}_{user.last_name}_{int(time.time())}.xlsx".lower()
     logging.info(f"создаем отчет: {title}")
+
+    logging.info(
+        f"start_date: {start_date}, end_date: {end_date}, metrics: {metrics}, campaigns: {campaigns}"
+    )
 
     report = Report.objects.create(
         title=title,
@@ -368,8 +376,14 @@ def create_excel_report(user, statistics, metrics=None):
         file_name=title,
         date=timezone.now(),
         url=os.path.join(REPORTS_ROOT, "reports", title),
+        start_date=start_date,
+        end_date=end_date,
+        metrics=metrics,
     )
-
+    logging.info(f"Campaigns: {campaigns}")
+    if campaigns:
+        report.ad_plans.set(AdPlan.objects.filter(ad_plan_id__in=campaigns))
+    logging.info(f"Report: {report}")
     possible_metrics = {
         "shows": "Показы",
         "clicks": "Клики",

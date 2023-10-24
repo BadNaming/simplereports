@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from reports.models import Report, Statistics
+from reports.models import Report, Statistics, AdPlan
 
 from .validators import validate_metrics
 
@@ -23,7 +23,13 @@ class AdPlanSerializer(serializers.Serializer):
     Сериализатор для получения списка рекламных кампаний
     """
 
-    ad_plan_id = serializers.IntegerField()
+    class Meta:
+        model = AdPlan
+        fields = (
+            "id",
+            "name",
+            "user",
+        )
 
 
 class CampaignSerializer(serializers.Serializer):
@@ -77,7 +83,19 @@ class UserReportsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Report
-        fields = ("id", "title", "status", "user", "date", "file_name", "url")
+        fields = (
+            "id",
+            "title",
+            "status",
+            "user",
+            "date",
+            "file_name",
+            "url",
+            "ad_plans",
+            "start_date",
+            "end_date",
+            "metrics",
+        )
 
 
 class StatisticsSerializer(serializers.ModelSerializer):

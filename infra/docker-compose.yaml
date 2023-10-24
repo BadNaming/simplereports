@@ -11,13 +11,18 @@ services:
     image: jinglemybells/simplerep:latest
     restart: always
     volumes:
-      - static_value:/app/static/
+      - static_value:/app/static_backend/
       - media_value:/app/media/
     depends_on:
       - db
     env_file:
       - ./.env
-
+  react-app:
+    container_name: my_react_app
+    image: kapshtykas/simplereports_front
+    volumes:
+      - .:/react_app
+      - app-volume:/app/build/
   nginx:
     image: nginx:1.21.3-alpine
     ports:
@@ -25,27 +30,19 @@ services:
       - "443:443"
 
     volumes:
+      - app-volume:/usr/share/nginx/html/
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-      - static_value:/var/html/static/
-      - media_value:/var/html/media/
-      # - ./data/certbot/conf:/etc/letsencrypt
-      # - ./data/certbot/www:/var/www/certbot
+      - static_value:/usr/share/nginx/html/static_backend/
+      - media_value:/usr/share/nginx/html/
 
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
 
     depends_on:
       - backend
 
-  # certbot:
-  #   image: certbot/certbot
-
-  #   volumes:
-  #     - ./data/certbot/conf:/etc/letsencrypt
-  #     - ./data/certbot/www:/var/www/certbot
-
-  #   entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
-
 volumes:
   static_value:
   media_value:
   postgres:
+  app-volume:
+
