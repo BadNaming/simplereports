@@ -1,9 +1,9 @@
-from simplereports.settings import TOKEN
+""" from simplereports.settings import TOKEN """
 
 GENERAL_URL = "https://ads.vk.com/api/v2/"
-REQUEST_HEADERS = {
+""" REQUEST_HEADERS = {
     "Authorization": f"Bearer {TOKEN}",
-}
+} """
 
 
 # инфо о пользователе
