@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 User = get_user_model()
@@ -57,7 +58,7 @@ class Statistics(models.Model):
     date = models.DateField(verbose_name="Дата")
     shows = models.IntegerField(verbose_name="Показы")
     clicks = models.IntegerField(verbose_name="Клики")
-    spent = models.CharField(verbose_name="Расходы", max_length=50)
+    spent = models.FloatField(verbose_name="Расходы")
 
     def __str__(self):
         return str(self.ad_plan) + " " + str(self.date)
@@ -92,3 +93,9 @@ class Report(models.Model):
     )
     file_name = models.CharField(max_length=100, verbose_name="Название файла")
     url = models.FilePathField(path=settings.REPORTS_ROOT, allow_files=True)
+    start_date = models.DateField(verbose_name="Дата начала периода", null=True)
+    end_date = models.DateField(verbose_name="Дата окончания периода", null=True)
+    ad_plans = models.ManyToManyField(AdPlan, verbose_name="Рекламные кампании")
+    metrics = ArrayField(
+        models.CharField(max_length=20, verbose_name="Метрики"), null=True
+    )
