@@ -191,7 +191,6 @@ def get_daily_data(campaigns, user, start_date=None) -> Union[Response, list]:
             },
             status=daily_data_response.status_code,
         )
-    logging.info(daily_data_response.json().get("items", []))
     statistics = list(
         (
             {
