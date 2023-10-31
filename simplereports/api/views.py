@@ -106,7 +106,6 @@ def add_daily_data(request, start_date=None, *args, **kwargs):
     Returns:
     - Возврат ответа со списком обновленных статистик и статусом 200.
     """
-    logger.info("Запрос на получение ежедневной статистики", request)
     user = request.user
 
     ad_plans_data = get_ad_plans(user)
