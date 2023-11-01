@@ -74,7 +74,7 @@ def get_last_date(ad_plans) -> datetime.date:
     if last_dates:
         return min(last_dates)
     else:
-        return timezone.now().date() - timezone.timedelta(days=150)
+        return timezone.now().date() - timezone.timedelta(days=360)
 
 
 def get_ad_plans(user) -> Union[Response, dict]:
