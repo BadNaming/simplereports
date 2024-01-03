@@ -63,7 +63,7 @@ def get_last_date(ad_plans) -> datetime.date:
     :param ad_plans: Список id кампаний в VK.
 
     :return: минимальная дата из максимальных дат по каждой из кампаний,
-    за которые в базе данных есть статистика, либо 150 дней назад.
+    за которые в базе данных есть статистика, либо 360 дней назад.
     """
     last_dates = (
         Statistics.objects.filter(ad_plan__ad_plan_id__in=ad_plans)
